@@ -16,6 +16,7 @@ const pricingSchema = z.object({
 
 export default function NewProductPage() {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,7 +27,7 @@ export default function NewProductPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  /* ------------------ Handlers ------------------ */
+  /* ------------------ Validation Handlers ------------------ */
   const handleNextFromBasic = () => {
     const result = basicSchema.safeParse({
       name: formData.name,
@@ -67,6 +68,46 @@ export default function NewProductPage() {
     setStep(3);
   };
 
+  /* ------------------ Save Product ------------------ */
+  const handleSaveProduct = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          price: formData.price,
+          stock: formData.stock,
+        }),
+      });
+
+      if (!res.ok) {
+        alert("Failed to save product");
+        return;
+      }
+
+      alert("Product saved successfully!");
+
+      // Reset form after save
+      setFormData({
+        name: "",
+        description: "",
+        price: 0,
+        stock: 0,
+      });
+      setStep(1);
+    } catch (error) {
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* ------------------ UI ------------------ */
   return (
     <div className="max-w-2xl">
@@ -85,7 +126,7 @@ export default function NewProductPage() {
         </span>
       </div>
 
-      {/* Step 1: Basic */}
+      {/* Step 1 */}
       {step === 1 && (
         <div className="space-y-4">
           <input
@@ -97,9 +138,7 @@ export default function NewProductPage() {
               setFormData({ ...formData, name: e.target.value })
             }
           />
-          {errors.name && (
-            <p className="text-sm text-red-600">{errors.name}</p>
-          )}
+          {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
 
           <textarea
             placeholder="Description"
@@ -122,7 +161,7 @@ export default function NewProductPage() {
         </div>
       )}
 
-      {/* Step 2: Pricing */}
+      {/* Step 2 */}
       {step === 2 && (
         <div className="space-y-4">
           <input
@@ -131,15 +170,10 @@ export default function NewProductPage() {
             className="w-full rounded border px-3 py-2"
             value={formData.price}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                price: Number(e.target.value),
-              })
+              setFormData({ ...formData, price: Number(e.target.value) })
             }
           />
-          {errors.price && (
-            <p className="text-sm text-red-600">{errors.price}</p>
-          )}
+          {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}
 
           <input
             type="number"
@@ -147,15 +181,10 @@ export default function NewProductPage() {
             className="w-full rounded border px-3 py-2"
             value={formData.stock}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                stock: Number(e.target.value),
-              })
+              setFormData({ ...formData, stock: Number(e.target.value) })
             }
           />
-          {errors.stock && (
-            <p className="text-sm text-red-600">{errors.stock}</p>
-          )}
+          {errors.stock && <p className="text-sm text-red-600">{errors.stock}</p>}
 
           <div className="flex justify-between">
             <button
@@ -174,13 +203,10 @@ export default function NewProductPage() {
         </div>
       )}
 
-      {/* Step 3: Image */}
+      {/* Step 3 */}
       {step === 3 && (
         <div className="space-y-4">
-          <input
-            type="file"
-            className="w-full rounded border px-3 py-2"
-          />
+          <input type="file" className="w-full rounded border px-3 py-2" />
 
           <div className="flex justify-between">
             <button
@@ -189,8 +215,12 @@ export default function NewProductPage() {
             >
               Back
             </button>
-            <button className="rounded bg-green-600 px-4 py-2 text-white">
-              Save Product
+            <button
+              onClick={handleSaveProduct}
+              disabled={loading}
+              className="rounded bg-green-600 px-4 py-2 text-white disabled:opacity-50"
+            >
+              {loading ? "Saving..." : "Save Product"}
             </button>
           </div>
         </div>
