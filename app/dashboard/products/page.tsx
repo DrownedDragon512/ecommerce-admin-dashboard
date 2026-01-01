@@ -112,21 +112,29 @@ export default function ProductsPage() {
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr className="border-t" key={product._id}>
+                  <tr 
+                    className="border-t transition-all duration-300 hover:bg-gray-50 hover:shadow-lg group" 
+                    key={product._id}
+                  >
                     <td className="px-4 py-3">
                       {product.image ? (
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="h-12 w-12 object-cover rounded"
+                          className="h-12 w-12 object-cover rounded transition-all duration-300 group-hover:h-24 group-hover:w-24"
                         />
                       ) : (
-                        <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                        <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 transition-all duration-300 group-hover:h-24 group-hover:w-24">
                           No img
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-900">{product.name}</td>
+                    <td className="px-4 py-3">
+                      <div className="text-gray-900 font-medium">{product.name}</div>
+                      <div className="text-sm text-gray-600 mt-1 max-h-0 overflow-hidden opacity-0 transition-all duration-300 group-hover:max-h-20 group-hover:opacity-100">
+                        {product.description}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-gray-900">₹{product.price.toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-900">{product.stock}</td>
                     <td className="px-4 py-3 text-sm text-gray-500">
