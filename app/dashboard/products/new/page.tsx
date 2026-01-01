@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 /* ------------------ Zod Schemas ------------------ */
 const basicSchema = z.object({
@@ -15,6 +16,7 @@ const pricingSchema = z.object({
 });
 
 export default function NewProductPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -87,11 +89,14 @@ export default function NewProductPage() {
       });
 
       if (!res.ok) {
-        alert("Failed to save product");
+        const error = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(error.error || "Failed to save product");
         return;
       }
 
       alert("Product saved successfully!");
+
+      router.push("/dashboard/products");
 
       // Reset form after save
       setFormData({
