@@ -10,6 +10,8 @@ type Product = {
   description: string;
   price: number;
   stock: number;
+  sold?: number;
+  totalIntake?: number;
   image?: string;
   createdAt?: string;
 };
@@ -18,6 +20,9 @@ export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSoldModal, setShowSoldModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [soldUnits, setSoldUnits] = useState<number>(0);
 
   const loadProducts = async () => {
     try {
@@ -63,6 +68,40 @@ export default function ProductsPage() {
       }
 
       alert("Product deleted successfully!");
+      loadProducts();
+    } catch (error) {
+      alert("Something went wrong");
+    }
+  };
+
+  const handleSoldClick = (productId: string) => {
+    setSelectedProductId(productId);
+    setSoldUnits(0);
+    setShowSoldModal(true);
+  };
+
+  const handleMarkSold = async () => {
+    if (soldUnits <= 0) {
+      alert("Please enter a valid number of units");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/products/${selectedProductId}/sold`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ units: soldUnits }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(error.error || "Failed to mark sold");
+        return;
+      }
+
+      alert(`${soldUnits} units marked as sold!`);
+      setShowSoldModal(false);
+      setSoldUnits(0);
       loadProducts();
     } catch (error) {
       alert("Something went wrong");
@@ -150,6 +189,12 @@ export default function ProductsPage() {
                         Edit
                       </Link>
                       <button
+                        onClick={() => handleSoldClick(product._id)}
+                        className="text-green-600 hover:underline"
+                      >
+                        Sold
+                      </button>
+                      <button
                         onClick={() => handleDelete(product._id)}
                         className="text-red-600 hover:underline"
                       >
@@ -163,6 +208,37 @@ export default function ProductsPage() {
           </table>
         )}
       </div>
+
+      {/* Sold Modal */}
+      {showSoldModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-xl font-bold mb-4">Mark Units as Sold</h2>
+            <input
+              type="number"
+              min="1"
+              placeholder="Enter number of units sold"
+              className="w-full rounded border px-3 py-2 mb-4"
+              value={soldUnits}
+              onChange={(e) => setSoldUnits(Number(e.target.value))}
+            />
+            <div className="flex justify-between gap-2">
+              <button
+                onClick={() => setShowSoldModal(false)}
+                className="flex-1 rounded border px-4 py-2 text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMarkSold}
+                className="flex-1 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+              >
+                Mark Sold
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

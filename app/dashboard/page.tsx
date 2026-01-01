@@ -7,6 +7,8 @@ type Stats = {
   totalInventory: number;
   lowStockProducts: number;
   totalValue: number;
+  totalSold: number;
+  totalIntake: number;
 };
 
 async function getStats(): Promise<Stats> {
@@ -25,12 +27,22 @@ async function getStats(): Promise<Stats> {
     (sum, product) => sum + (product.price || 0) * (product.stock || 0),
     0
   );
+  const totalSold = products.reduce(
+    (sum, product) => sum + (product.sold || 0),
+    0
+  );
+  const totalIntake = products.reduce(
+    (sum, product) => sum + (product.totalIntake || 0),
+    0
+  );
 
   return {
     totalProducts,
     totalInventory,
     lowStockProducts,
     totalValue,
+    totalSold,
+    totalIntake,
   };
 }
 
@@ -51,9 +63,27 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Total Inventory */}
+        {/* Total Sold */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Total Inventory</div>
+          <div className="text-sm text-gray-400 mb-2">Total Sold</div>
+          <div className="text-3xl font-bold text-green-400">
+            {stats.totalSold}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">units sold</div>
+        </div>
+
+        {/* Total Value Sold */}
+        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="text-sm text-gray-400 mb-2">Total Value Sold</div>
+          <div className="text-3xl font-bold text-blue-400">
+            ₹{stats.totalIntake.toLocaleString()}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">revenue from sales</div>
+        </div>
+
+        {/* Current Inventory */}
+        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="text-sm text-gray-400 mb-2">Current Inventory</div>
           <div className="text-3xl font-bold text-white">
             {stats.totalInventory.toLocaleString()}
           </div>
@@ -69,10 +99,10 @@ export default async function DashboardPage() {
           <div className="text-xs text-gray-500 mt-1">products &lt; 10 units</div>
         </div>
 
-        {/* Total Value */}
+        {/* Inventory Value */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Total Inventory Value</div>
-          <div className="text-3xl font-bold text-green-400">
+          <div className="text-sm text-gray-400 mb-2">Inventory Value</div>
+          <div className="text-3xl font-bold text-purple-400">
             ₹{stats.totalValue.toLocaleString()}
           </div>
         </div>
