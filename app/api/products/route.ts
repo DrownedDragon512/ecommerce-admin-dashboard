@@ -2,6 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
+import { uploadImage } from "@/lib/cloudinary";
 
 export const dynamic = "force-dynamic";
 
@@ -45,8 +46,23 @@ export async function POST(req: Request) {
 
     const db = await getDb();
 
+    let imageUrl = "";
+    if (validatedData.image) {
+      // Upload to Cloudinary if image is base64
+      if (validatedData.image.startsWith("data:image")) {
+        imageUrl = await uploadImage(validatedData.image);
+      } else {
+        // Already a URL
+        imageUrl = validatedData.image;
+      }
+    }
+
     const insertResult = await db.collection("products").insertOne({
-      ...validatedData,
+      name: validatedData.name,
+      description: validatedData.description,
+      price: validatedData.price,
+      stock: validatedData.stock,
+      image: imageUrl,
       createdAt: new Date(),
     });
 

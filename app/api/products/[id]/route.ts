@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { z } from "zod";
+import { uploadImage } from "@/lib/cloudinary";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,12 @@ export async function PUT(
 
     const validatedData = productSchema.parse(body);
 
+    let imageUrl = validatedData.image || "";
+    if (imageUrl && imageUrl.startsWith("data:image")) {
+      // Upload new image to Cloudinary
+      imageUrl = await uploadImage(imageUrl);
+    }
+
     const db = await getDb();
 
     const result = await db
@@ -71,7 +78,11 @@ export async function PUT(
         { _id: new ObjectId(paramId) },
         {
           $set: {
-            ...validatedData,
+            name: validatedData.name,
+            description: validatedData.description,
+            price: validatedData.price,
+            stock: validatedData.stock,
+            image: imageUrl,
             updatedAt: new Date(),
           },
         }

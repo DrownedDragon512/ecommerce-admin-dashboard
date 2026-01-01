@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
@@ -36,7 +37,7 @@ export async function POST(
 
     const currentStock = product.stock || 0;
     const currentSold = product.sold || 0;
-    const currentIntake = product.totalIntake || product.price * currentStock;
+    const currentIntake = product.totalIntake || 0;
 
     if (units > currentStock) {
       return NextResponse.json(
@@ -53,7 +54,7 @@ export async function POST(
           $set: {
             stock: currentStock - units,
             sold: currentSold + units,
-            totalIntake: currentIntake,
+            totalIntake: currentIntake + (product.price * units),
           },
         }
       );
@@ -61,6 +62,8 @@ export async function POST(
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
+
+    revalidatePath("/dashboard");
 
     return NextResponse.json(
       { message: "Units marked as sold successfully" },
