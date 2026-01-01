@@ -135,12 +135,12 @@ export default function ProductsPage() {
                         : "—"}
                     </td>
                     <td className="px-4 py-3 space-x-2 text-sm">
-                      <button
-                        onClick={() => alert("Edit functionality coming soon!")}
+                      <Link
+                        href={`/dashboard/products/${product._id}`}
                         className="text-blue-600 hover:underline"
                       >
                         Edit
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleDelete(product._id)}
                         className="text-red-600 hover:underline"
