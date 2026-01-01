@@ -10,6 +10,7 @@ type Product = {
   description: string;
   price: number;
   stock: number;
+  image?: string;
   createdAt?: string;
 };
 
@@ -90,6 +91,7 @@ export default function ProductsPage() {
           <table className="w-full border-collapse">
             <thead className="bg-zinc-100">
               <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Image</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Stock</th>
@@ -103,7 +105,7 @@ export default function ProductsPage() {
                 <tr>
                   <td
                     className="px-4 py-6 text-center text-sm text-gray-500"
-                    colSpan={5}
+                    colSpan={6}
                   >
                     No products yet. Click <b>Add Product</b> to create one.
                   </td>
@@ -111,6 +113,19 @@ export default function ProductsPage() {
               ) : (
                 products.map((product) => (
                   <tr className="border-t" key={product._id}>
+                    <td className="px-4 py-3">
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="h-12 w-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                          No img
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-900">{product.name}</td>
                     <td className="px-4 py-3 text-gray-900">₹{product.price.toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-900">{product.stock}</td>

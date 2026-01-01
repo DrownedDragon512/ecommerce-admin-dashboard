@@ -25,8 +25,10 @@ export default function NewProductPage() {
     description: "",
     price: 0,
     stock: 0,
+    image: "",
   });
 
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   /* ------------------ Validation Handlers ------------------ */
@@ -70,6 +72,21 @@ export default function NewProductPage() {
     setStep(3);
   };
 
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setFormData({ ...formData, image: base64 });
+      setImagePreview(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
   /* ------------------ Save Product ------------------ */
   const handleSaveProduct = async () => {
     try {
@@ -85,6 +102,7 @@ export default function NewProductPage() {
           description: formData.description,
           price: formData.price,
           stock: formData.stock,
+          image: formData.image,
         }),
       });
 
@@ -104,7 +122,9 @@ export default function NewProductPage() {
         description: "",
         price: 0,
         stock: 0,
+        image: "",
       });
+      setImagePreview("");
       setStep(1);
     } catch (error) {
       alert("Something went wrong");
@@ -211,7 +231,23 @@ export default function NewProductPage() {
       {/* Step 3 */}
       {step === 3 && (
         <div className="space-y-4">
-          <input type="file" className="w-full rounded border px-3 py-2" />
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full rounded border px-3 py-2"
+            onChange={handleImageChange}
+          />
+
+          {imagePreview && (
+            <div className="mt-4 border rounded p-4">
+              <p className="text-sm text-gray-600 mb-2">Image Preview:</p>
+              <img
+                src={imagePreview}
+                alt="Product preview"
+                className="max-w-xs max-h-64 rounded"
+              />
+            </div>
+          )}
 
           <div className="flex justify-between">
             <button
