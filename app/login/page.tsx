@@ -16,16 +16,6 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Validate credentials locally
-    const ADMIN_EMAIL = "admin@xyz.com";
-    const ADMIN_PASSWORD = "passforadmin";
-
-    if (formData.email !== ADMIN_EMAIL || formData.password !== ADMIN_PASSWORD) {
-      alert("Invalid email or password");
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",

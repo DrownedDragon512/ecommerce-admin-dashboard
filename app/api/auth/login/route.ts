@@ -2,24 +2,35 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
-const ADMIN_EMAIL = "admin@xyz.com";
-const ADMIN_PASSWORD = "passforadmin";
+const ADMIN_CREDENTIALS = [
+  { email: "admin@xyz.com", password: "passforadmin" },
+  { email: "admin2@xyz.com", password: "passforadmin" },
+];
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
+    const trimmedEmail = email?.trim().toLowerCase();
+    const trimmedPassword = password?.trim();
 
-    if (!email || !password) {
+    if (!trimmedEmail || !trimmedPassword) {
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
       );
     }
 
+    console.log("Login attempt for email:", trimmedEmail);
+
     // Check against hardcoded admin credentials
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+    const validAdmin = ADMIN_CREDENTIALS.find(
+      (admin) => admin.email.toLowerCase() === trimmedEmail && admin.password === trimmedPassword
+    );
+
+    if (!validAdmin) {
+      console.log("Invalid credentials for email:", trimmedEmail);
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        { error: "Invalid email or password" },
         { status: 401 }
       );
     }
