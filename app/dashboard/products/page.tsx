@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { ObjectId } from "mongodb";
-import { getDb } from "@/lib/mongodb";
+"use client";
 
-export const dynamic = "force-dynamic";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Product = {
   _id: string;
@@ -10,27 +10,63 @@ type Product = {
   description: string;
   price: number;
   stock: number;
-  createdAt?: Date;
+  createdAt?: string;
 };
 
-async function loadProducts(): Promise<Product[]> {
-  const db = await getDb();
+export default function ProductsPage() {
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const products = await db
-    .collection("products")
-    .find({})
-    .sort({ createdAt: -1 })
-    .toArray();
+  const loadProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      if (res.ok) {
+        const data = await res.json();
+        const items = (data.products || []).map((p: any) => ({
+          ...p,
+          _id: p._id || p.id || "",
+        }));
+        setProducts(items);
+      }
+    } catch (error) {
+      console.error("Failed to load products", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  return products.map((product) => ({
-    ...product,
-    _id: (product._id as ObjectId).toHexString(),
-    createdAt: product.createdAt as Date | undefined,
-  })) as Product[];
-}
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
-export default async function ProductsPage() {
-  const products = await loadProducts();
+  const handleDelete = async (productId: string) => {
+    if (!productId) {
+      alert("Missing product id");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this product?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(error.error || "Failed to delete product");
+        return;
+      }
+
+      alert("Product deleted successfully!");
+      loadProducts();
+    } catch (error) {
+      alert("Something went wrong");
+    }
+  };
 
   return (
     <>
@@ -46,47 +82,63 @@ export default async function ProductsPage() {
       </div>
 
       <div className="mt-6 overflow-hidden rounded bg-white shadow">
-        <table className="w-full border-collapse">
-          <thead className="bg-zinc-100">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Stock</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Added</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {products.length === 0 ? (
+        {loading ? (
+          <div className="px-4 py-12 text-center text-sm text-gray-500">
+            Loading...
+          </div>
+        ) : (
+          <table className="w-full border-collapse">
+            <thead className="bg-zinc-100">
               <tr>
-                <td
-                  className="px-4 py-6 text-center text-sm text-gray-500"
-                  colSpan={5}
-                >
-                  No products yet. Click <b>Add Product</b> to create one.
-                </td>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Stock</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Added</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
               </tr>
-            ) : (
-              products.map((product) => (
-                <tr className="border-t" key={product._id}>
-                  <td className="px-4 py-3">{product.name}</td>
-                  <td className="px-4 py-3">₹{product.price.toLocaleString()}</td>
-                  <td className="px-4 py-3">{product.stock}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {product.createdAt
-                      ? new Date(product.createdAt).toLocaleDateString()
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3 space-x-2 text-sm">
-                    <button className="text-blue-600 hover:underline">Edit</button>
-                    <button className="text-red-600 hover:underline">Delete</button>
+            </thead>
+
+            <tbody>
+              {products.length === 0 ? (
+                <tr>
+                  <td
+                    className="px-4 py-6 text-center text-sm text-gray-500"
+                    colSpan={5}
+                  >
+                    No products yet. Click <b>Add Product</b> to create one.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                products.map((product) => (
+                  <tr className="border-t" key={product._id}>
+                    <td className="px-4 py-3 text-gray-900">{product.name}</td>
+                    <td className="px-4 py-3 text-gray-900">₹{product.price.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-gray-900">{product.stock}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {product.createdAt
+                        ? new Date(product.createdAt).toLocaleDateString()
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3 space-x-2 text-sm">
+                      <button
+                        onClick={() => alert("Edit functionality coming soon!")}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product._id)}
+                        className="text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </>
   );
