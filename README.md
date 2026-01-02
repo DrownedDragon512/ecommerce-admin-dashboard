@@ -174,7 +174,7 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 OPENAI_API_KEY=your_openai_api_key
 
--npm run dev
+- npm run dev
 - go to http://localhost:3000
 
 
