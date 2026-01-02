@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
+import { Snackbar, SnackbarType } from "../../Snackbar";
 
 const basicSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -33,6 +34,11 @@ export default function EditProductPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+
+  const showSnackbar = (message: string, type: SnackbarType = "info") => {
+    setSnackbar({ message, type });
+  };
 
   const [formData, setFormData] = useState({
     name: "",
@@ -60,12 +66,12 @@ export default function EditProductPage() {
           }
         } else {
           const error = await res.json().catch(() => ({ error: "Unknown error" }));
-          alert(`Failed to load product: ${error.error}`);
-          router.push("/dashboard/products");
+          showSnackbar(`Failed to load product: ${error.error}`, "error");
+          setTimeout(() => router.push("/dashboard/products"), 500);
         }
       } catch (error) {
-        alert(`Error loading product: ${error}`);
-        router.push("/dashboard/products");
+        showSnackbar(`Error loading product: ${error}`, "error");
+        setTimeout(() => router.push("/dashboard/products"), 500);
       } finally {
         setInitialLoading(false);
       }
@@ -149,14 +155,14 @@ export default function EditProductPage() {
 
       if (!res.ok) {
         const error = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(error.error || "Failed to update product");
+        showSnackbar(error.error || "Failed to update product", "error");
         return;
       }
 
-      alert("Product updated successfully!");
-      router.push("/dashboard/products");
+      showSnackbar("Product updated successfully!", "success");
+      setTimeout(() => router.push("/dashboard/products"), 500);
     } catch (error) {
-      alert("Something went wrong");
+      showSnackbar("Something went wrong", "error");
     } finally {
       setLoading(false);
     }
@@ -168,6 +174,13 @@ export default function EditProductPage() {
 
   return (
     <div className="max-w-2xl p-8">
+      {snackbar && (
+        <Snackbar
+          message={snackbar.message}
+          type={snackbar.type}
+          onClose={() => setSnackbar(null)}
+        />
+      )}
       <h1 className="mb-6 text-3xl font-bold">Edit Product</h1>
 
       <div className="mb-8 flex gap-6 text-sm">

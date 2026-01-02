@@ -1,13 +1,18 @@
 "use client";
 
+import { useConfirmModal } from "./ConfirmModal";
+
 type ProductActionsProps = {
   productId: string;
   onDelete: () => void;
 };
 
 export function ProductActions({ productId, onDelete }: ProductActionsProps) {
+  const { open: openConfirm, Modal: ConfirmModal } = useConfirmModal();
+
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this product?")) {
+    const confirmed = await openConfirm("Delete Product", "Are you sure you want to delete this product? This action cannot be undone.");
+    if (!confirmed) {
       return;
     }
 
@@ -30,16 +35,19 @@ export function ProductActions({ productId, onDelete }: ProductActionsProps) {
   };
 
   return (
-    <div className="space-x-2 text-sm">
-      <button
-        onClick={() => alert("Edit functionality coming soon!")}
-        className="text-blue-600 hover:underline"
-      >
-        Edit
-      </button>
-      <button onClick={handleDelete} className="text-red-600 hover:underline">
-        Delete
-      </button>
-    </div>
+    <>
+      <ConfirmModal />
+      <div className="space-x-2 text-sm">
+        <button
+          onClick={() => alert("Edit functionality coming soon!")}
+          className="text-blue-600 hover:underline"
+        >
+          Edit
+        </button>
+        <button onClick={handleDelete} className="text-red-600 hover:underline">
+          Delete
+        </button>
+      </div>
+    </>
   );
 }

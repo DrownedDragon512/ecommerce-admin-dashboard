@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Snackbar, SnackbarType } from "../Snackbar";
+import { useConfirmModal } from "../ConfirmModal";
 
 type Product = {
   _id: string;
@@ -19,11 +21,17 @@ type Product = {
 
 export default function ProductsPage() {
   const router = useRouter();
+  const { open: openConfirm, Modal: ConfirmModal } = useConfirmModal();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [soldUnits, setSoldUnits] = useState<number>(0);
+  const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+
+  const showSnackbar = (message: string, type: SnackbarType = "info") => {
+    setSnackbar({ message, type });
+  };
 
   const loadProducts = async () => {
     try {
@@ -61,11 +69,12 @@ export default function ProductsPage() {
 
   const handleDelete = async (productId: string) => {
     if (!productId) {
-      alert("Missing product id");
+      showSnackbar("Missing product id", "error");
       return;
     }
 
-    if (!confirm("Are you sure you want to delete this product?")) {
+    const confirmed = await openConfirm("Delete Product", "Are you sure you want to delete this product? This action cannot be undone.");
+    if (!confirmed) {
       return;
     }
 
@@ -76,14 +85,14 @@ export default function ProductsPage() {
 
       if (!res.ok) {
         const error = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(error.error || "Failed to delete product");
+        showSnackbar(error.error || "Failed to delete product", "error");
         return;
       }
 
-      alert("Product deleted successfully!");
+      showSnackbar("Product deleted successfully!", "success");
       loadProducts();
     } catch (error) {
-      alert("Something went wrong");
+      showSnackbar("Something went wrong", "error");
     }
   };
 
@@ -95,7 +104,7 @@ export default function ProductsPage() {
 
   const handleMarkSold = async () => {
     if (soldUnits <= 0) {
-      alert("Please enter a valid number of units");
+      showSnackbar("Please enter a valid number of units", "error");
       return;
     }
 
@@ -108,21 +117,22 @@ export default function ProductsPage() {
 
       if (!res.ok) {
         const error = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(error.error || "Failed to mark sold");
+        showSnackbar(error.error || "Failed to mark sold", "error");
         return;
       }
 
-      alert(`${soldUnits} units marked as sold!`);
+      showSnackbar(`${soldUnits} units marked as sold!`, "success");
       setShowSoldModal(false);
       setSoldUnits(0);
       loadProducts();
     } catch (error) {
-      alert("Something went wrong");
+      showSnackbar("Something went wrong", "error");
     }
   };
 
   return (
     <>
+      <ConfirmModal />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Products</h1>
 
@@ -135,6 +145,13 @@ export default function ProductsPage() {
       </div>
 
       <div className="mt-6 overflow-hidden rounded bg-white shadow">
+        {snackbar && (
+          <Snackbar
+            message={snackbar.message}
+            type={snackbar.type}
+            onClose={() => setSnackbar(null)}
+          />
+        )}
         {loading ? (
           <div className="px-4 py-12 text-center text-sm text-gray-500">
             Loading...

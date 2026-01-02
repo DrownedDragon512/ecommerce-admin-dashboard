@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import { Snackbar, SnackbarType } from "../../Snackbar";
 
 /* ------------------ Zod Schemas ------------------ */
 const basicSchema = z.object({
@@ -32,6 +33,11 @@ export default function NewProductPage() {
 
   const [imagePreview, setImagePreview] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+
+  const showSnackbar = (message: string, type: SnackbarType = "info") => {
+    setSnackbar({ message, type });
+  };
 
   /* ------------------ Validation Handlers ------------------ */
   const handleNextFromBasic = () => {
@@ -112,14 +118,13 @@ export default function NewProductPage() {
 
       if (!res.ok) {
         const error = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(error.error || "Failed to save product");
+        showSnackbar(error.error || "Failed to save product", "error");
         return;
       }
-
-      alert("Product saved successfully!");
-
-      router.push("/dashboard/products");
-
+ 
+      showSnackbar("Product saved successfully!", "success");
+ 
+      setTimeout(() => router.push("/dashboard/products"), 400);
       // Reset form after save
       setFormData({
         name: "",
@@ -132,7 +137,7 @@ export default function NewProductPage() {
       setImagePreview("");
       setStep(1);
     } catch (error) {
-      alert("Something went wrong");
+      showSnackbar("Something went wrong", "error");
     } finally {
       setLoading(false);
     }
@@ -141,6 +146,13 @@ export default function NewProductPage() {
   /* ------------------ UI ------------------ */
   return (
     <div className="max-w-2xl">
+      {snackbar && (
+        <Snackbar
+          message={snackbar.message}
+          type={snackbar.type}
+          onClose={() => setSnackbar(null)}
+        />
+      )}
       <h1 className="mb-6 text-3xl font-bold">Add New Product</h1>
 
       {/* Stepper */}
