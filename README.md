@@ -146,7 +146,6 @@ ecommerce-admin-dashboard/
 ├── package.json
 ├── tsconfig.json
 └── README.md
-
 ---
 
 ## 🔑 Demo Credentials
