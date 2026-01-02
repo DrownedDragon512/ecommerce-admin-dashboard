@@ -183,7 +183,7 @@ export default function NewProductPage() {
           )}
 
           <select
-            className="w-full rounded border px-3 py-2"
+            className="w-full rounded border px-3 py-2 bg-black text-white border-gray-700"
             value={formData.category}
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
@@ -213,26 +213,32 @@ export default function NewProductPage() {
       {/* Step 2 */}
       {step === 2 && (
         <div className="space-y-4">
-          <input
-            type="number"
-            placeholder="Price"
-            className="w-full rounded border px-3 py-2"
-            value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: Number(e.target.value) })
-            }
-          />
+          <div className="space-y-2">
+            <div className="text-sm font-semibold text-white">Pricing</div>
+            <input
+              type="number"
+              placeholder="Price"
+              className="w-full rounded border px-3 py-2"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: Number(e.target.value) })
+              }
+            />
+          </div>
           {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}
 
-          <input
-            type="number"
-            placeholder="Stock"
-            className="w-full rounded border px-3 py-2"
-            value={formData.stock}
-            onChange={(e) =>
-              setFormData({ ...formData, stock: Number(e.target.value) })
-            }
-          />
+          <div className="space-y-2">
+            <div className="text-sm font-semibold text-white">Quantity</div>
+            <input
+              type="number"
+              placeholder="Stock"
+              className="w-full rounded border px-3 py-2"
+              value={formData.stock}
+              onChange={(e) =>
+                setFormData({ ...formData, stock: Number(e.target.value) })
+              }
+            />
+          </div>
           {errors.stock && <p className="text-sm text-red-600">{errors.stock}</p>}
 
           <div className="flex justify-between">
@@ -255,6 +261,7 @@ export default function NewProductPage() {
       {/* Step 3 */}
       {step === 3 && (
         <div className="space-y-4">
+          <div className="text-sm font-semibold text-white">Add product image</div>
           <input
             type="file"
             accept="image/*"

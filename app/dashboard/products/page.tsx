@@ -143,12 +143,12 @@ export default function ProductsPage() {
           <table className="w-full border-collapse">
             <thead className="bg-zinc-100">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Image</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Stock</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Added</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-black">Image</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-black">Name</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-black">Price</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-black">Stock</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-black">Added</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-black">Actions</th>
               </tr>
             </thead>
 

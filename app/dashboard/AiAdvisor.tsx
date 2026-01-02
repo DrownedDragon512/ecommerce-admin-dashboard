@@ -58,7 +58,7 @@ export function AiAdvisor({ summary }: AiAdvisorProps) {
         </button>
       </div>
       {error && <div className="text-xs text-red-400 mb-2">{error}</div>}
-      <div className="text-sm text-gray-200 whitespace-pre-wrap leading-6 min-h-[48px]">
+      <div className="text-sm text-gray-200 whitespace-pre-wrap leading-6 min-h-12">
         {loading && !advice ? "Loading advice..." : (
           <div>
             {(advice || "No advice yet.").split(/(\*\*[^*]+\*\*)/g).map((part, idx) => 

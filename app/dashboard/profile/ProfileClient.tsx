@@ -41,7 +41,7 @@ export function ProfileClient({ initialName, email, userId }: ProfileClientProps
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 space-y-4">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center text-white font-semibold">
+            <div className="h-12 w-12 rounded-full bg-linear-to-br from-emerald-500 to-sky-500 flex items-center justify-center text-white font-semibold">
               {displayInitial}
             </div>
             <div>
