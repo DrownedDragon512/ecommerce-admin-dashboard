@@ -87,7 +87,25 @@ export default function DashboardLayout({
 
       {/* Main */}
       <div className="flex flex-1 flex-col">
-        {children}
+        <header className="flex items-center justify-between border-b border-slate-800 bg-[#0f172a]/80 px-6 py-4 sticky top-0 z-10 backdrop-blur">
+          <div>
+            <div className="text-xs text-gray-500">Dashboard</div>
+            <div className="text-base font-semibold text-white">Overview</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="/dashboard/profile"
+              className="relative h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center text-white font-semibold shadow-lg hover:scale-105 transition"
+              title="Profile"
+            >
+              <span className="sr-only">Profile</span>
+              P
+            </a>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

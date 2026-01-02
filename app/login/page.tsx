@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -37,9 +38,11 @@ export default function LoginPage() {
       console.log("Login response:", data);
 
       // Successful login - force reload to ensure cookies are set
+      setSuccess(true);
+      setLoading(false);
       setTimeout(() => {
         window.location.href = "/dashboard";
-      }, 100);
+      }, 800);
     } catch (error) {
       alert("An error occurred");
       setLoading(false);
@@ -110,13 +113,49 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
+            disabled={loading || success}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? "Processing..." : "Login"}
+            {success ? (
+              <>
+                <span className="h-4 w-4 rounded-full border-2 border-white flex items-center justify-center">
+                  <span className="block h-2 w-2 bg-white rounded-full" />
+                </span>
+                Redirecting...
+              </>
+            ) : loading ? (
+              <>
+                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Login"
+            )}
           </button>
         </form>
       </div>
+
+      {success && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="relative h-20 w-20 flex items-center justify-center text-white">
+            <div className="absolute inset-0 rounded-full border-4 border-emerald-400/40 animate-ping" />
+            <div className="absolute inset-2 rounded-full border-4 border-emerald-400 animate-spin" />
+            <div className="relative h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

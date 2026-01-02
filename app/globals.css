@@ -24,3 +24,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Dashboard animation helpers */
+.anim-bar {
+  transform-origin: left center;
+  animation: growBar 0.9s ease-out both;
+}
+
+.anim-ring {
+  animation: popRing 0.9s ease-out both;
+}
+
+@keyframes growBar {
+  from {
+    transform: scaleX(0.2);
+    opacity: 0.2;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes popRing {
+  from {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
