@@ -1,36 +1,174 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Server-Rendered E-commerce Admin Dashboard
 
-## Getting Started
+Built with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, and **Recharts**
 
-First, run the development server:
+🔗 **View Demo:**  
+https://ecommerce-admin-dashboard-1pn4.vercel.app/dashboard
 
+---
+
+## Overview
+
+This is a **server-rendered e-commerce product management dashboard** built with Next.js.  
+It provides a production-ready admin interface with authentication, analytics, product CRUD, image uploads, and AI-powered insights.
+
+The dashboard is designed for **real-world admin workflows**, focusing on performance, clean UI, and scalability.
+
+---
+
+## Tech Stack
+
+This project uses the following stack:
+
+- **Framework** – Next.js 14+ (App Router, SSR)
+- **Language** – TypeScript
+- **Styling** – Tailwind CSS
+- **Charts** – Recharts
+- **Forms** – React Hook Form
+- **Schema Validation** – Zod
+- **Database** – MongoDB
+- **Authentication** – JWT
+- **Image Storage** – Cloudinary
+- **AI Integration** – OpenAI API
+- **State Management** – React Query / SWR
+
+---
+
+## Features
+
+### 🧱 Core Dashboard
+- Real-time statistics (products, revenue, stock, sales)
+- Monthly sales chart (line + area)
+- Revenue by category donut chart
+- Sales trends with 7-day & 30-day views
+- AI advisor for smart product insights
+
+### 📦 Product Management
+- Add products using a multi-step form
+- Edit and delete products with confirmation modal
+- Mark products as sold (units sold tracking)
+- Product listing with complete details
+- Cloudinary image upload support
+
+### 🔐 Authentication & Profile
+- Admin login/logout using JWT
+- Demo admin credentials
+- Profile page with editable display name
+- Dynamic greeting header
+- Avatar with initial-based icon
+
+### 🎨 UI / UX
+- GitHub Dark theme
+- Responsive sidebar navigation
+- Sticky header with profile access
+- Snackbar notifications (success / error / info)
+- Smooth transitions and hover effects
+- Fully responsive layout
+
+### 🤖 AI Features
+- OpenAI-powered product recommendations
+- Fallback rule-based insights if API is unavailable
+- Configurable temperature for varied responses
+
+---
+
+## Pages
+
+| Page | Description |
+|-----|------------|
+| Login | Admin authentication using demo credentials |
+| Dashboard | Analytics overview with charts and statistics |
+| Products | Product list with edit, delete, and sell actions |
+| Add Product | Multi-step product creation form |
+| Profile | User profile with display name customization |
+
+---
+
+## Feature-Based Structure
+
+ecommerce-admin-dashboard/
+├── app/                         # Next.js App Router
+│   ├── api/                     # Backend API routes
+│   │   ├── ai/
+│   │   │   └── suggest/          # AI product suggestions (OpenAI)
+│   │   │       └── route.ts
+│   │   ├── auth/                # Authentication APIs
+│   │   │   ├── login/
+│   │   │   ├── logout/
+│   │   │   ├── register/
+│   │   │   └── verify/
+│   │   └── products/            # Product CRUD APIs
+│   │       ├── route.ts
+│   │       ├── [id]/
+│   │       │   ├── route.ts
+│   │       │   ├── route-new.ts
+│   │       │   └── sold/         # Mark product as sold
+│   │       │       └── route.ts
+│   │
+│   ├── dashboard/               # Admin dashboard pages & components
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── StatsGrid.tsx
+│   │   ├── MonthlySalesChart.tsx
+│   │   ├── RevenueCategoryChart.tsx
+│   │   ├── SalesTrendChart.tsx
+│   │   ├── AiAdvisor.tsx
+│   │   ├── Snackbar.tsx
+│   │   ├── ConfirmModal.tsx
+│   │   ├── profile/             # Admin profile
+│   │   └── products/            # Product UI pages
+│   │       ├── page.tsx
+│   │       ├── new/
+│   │       └── [id]/
+│   │
+│   ├── login/                   # Login page
+│   ├── layout.tsx               # Root layout
+│   ├── globals.css              # Global styles
+│   └── page.tsx                 # Landing / redirect
+│
+├── lib/                         # Core utilities
+│   ├── auth.ts                  # JWT auth helpers
+│   ├── cloudinary.ts            # Image upload config
+│   └── mongodb.ts               # Database connection
+│
+├── public/                      # Static assets
+├── .env.local                   # Environment variables
+├── next.config.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+
+---
+
+## 🔑 Demo Credentials
+
+Email: admin@xyz.com
+Password: passforadmin
+
+Email: admin2@xyz.com
+Password: passforadmin
+
+---
+
+## 🚀 Getting Started (Step-by-Step)
+
+Follow these instructions to run the project locally.
+
+### 1. Clone the Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- git clone https://github.com/DrownedDragon512/ecommerce-admin-dashboard.git
+- cd ecommerce-admin-dashboard
+- npm install
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Create a .env.local file in the root directory:
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+OPENAI_API_KEY=your_openai_api_key
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+-npm run dev
+- go to http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
