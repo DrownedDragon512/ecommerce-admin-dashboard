@@ -162,9 +162,6 @@ Password: passforadmin
 ## 🚀 Getting Started (Step-by-Step)
 
 Follow these instructions to run the project locally.
-
-### 1. Clone the Repository
-```bash
 - git clone https://github.com/DrownedDragon512/ecommerce-admin-dashboard.git
 - cd ecommerce-admin-dashboard
 - npm install
