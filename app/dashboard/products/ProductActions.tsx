@@ -1,6 +1,6 @@
 "use client";
 
-import { useConfirmModal } from "./ConfirmModal";
+import { useConfirmModal } from "../ConfirmModal";
 
 type ProductActionsProps = {
   productId: string;
