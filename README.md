@@ -1,92 +1,108 @@
-# Server-Rendered E-commerce Admin Dashboard
+🛒 Server-Rendered E-commerce Admin Dashboard
 
-Built with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, and **Recharts**
+Built with Next.js 14+ (App Router), TypeScript, Tailwind CSS, and Recharts
 
-🔗 **View Demo:**  
+🔗 Live Demo:
 https://ecommerce-admin-dashboard-1pn4.vercel.app/dashboard
 
----
+📌 Overview
 
-## Overview
-
-This is a **server-rendered e-commerce product management dashboard** built with Next.js.  
+This is a server-rendered e-commerce product management dashboard built using Next.js.
 It provides a production-ready admin interface with authentication, analytics, product CRUD, image uploads, and AI-powered insights.
 
-The dashboard is designed for **real-world admin workflows**, focusing on performance, clean UI, and scalability.
+The dashboard is designed for real-world admin workflows, with a strong focus on performance, clean UI, and scalability.
 
----
+🧰 Tech Stack
 
-## Tech Stack
+Framework – Next.js 14+ (App Router, SSR)
 
-This project uses the following stack:
+Language – TypeScript
 
-- **Framework** – Next.js 14+ (App Router, SSR)
-- **Language** – TypeScript
-- **Styling** – Tailwind CSS
-- **Charts** – Recharts
-- **Forms** – React Hook Form
-- **Schema Validation** – Zod
-- **Database** – MongoDB
-- **Authentication** – JWT
-- **Image Storage** – Cloudinary
-- **AI Integration** – OpenAI API
-- **State Management** – React Query / SWR
+Styling – Tailwind CSS
 
----
+Charts – Recharts
 
-## Features
+Forms – React Hook Form
 
-### 🧱 Core Dashboard
-- Real-time statistics (products, revenue, stock, sales)
-- Monthly sales chart (line + area)
-- Revenue by category donut chart
-- Sales trends with 7-day & 30-day views
-- AI advisor for smart product insights
+Schema Validation – Zod
 
-### 📦 Product Management
-- Add products using a multi-step form
-- Edit and delete products with confirmation modal
-- Mark products as sold (units sold tracking)
-- Product listing with complete details
-- Cloudinary image upload support
+Database – MongoDB
 
-### 🔐 Authentication & Profile
-- Admin login/logout using JWT
-- Demo admin credentials
-- Profile page with editable display name
-- Dynamic greeting header
-- Avatar with initial-based icon
+Authentication – JWT
 
-### 🎨 UI / UX
-- GitHub Dark theme
-- Responsive sidebar navigation
-- Sticky header with profile access
-- Snackbar notifications (success / error / info)
-- Smooth transitions and hover effects
-- Fully responsive layout
+Image Storage – Cloudinary
 
-### 🤖 AI Features
-- OpenAI-powered product recommendations
-- Fallback rule-based insights if API is unavailable
-- Configurable temperature for varied responses
+AI Integration – OpenAI API
 
----
+State Management – React Query / SWR
 
-## Pages
+✨ Features
+🧱 Core Dashboard
 
-| Page | Description |
-|-----|------------|
-| Login | Admin authentication using demo credentials |
-| Dashboard | Analytics overview with charts and statistics |
-| Products | Product list with edit, delete, and sell actions |
-| Add Product | Multi-step product creation form |
-| Profile | User profile with display name customization |
+Real-time statistics (products, revenue, stock, sales)
 
----
+Monthly sales chart (line + area)
 
-## 📁 Project Structure
+Revenue by category donut chart
 
-```text
+Sales trends with 7-day & 30-day views
+
+AI advisor for smart product insights
+
+📦 Product Management
+
+Add products using a multi-step form
+
+Edit and delete products with confirmation modal
+
+Mark products as sold (units sold tracking)
+
+Product listing with complete details
+
+Cloudinary image upload support
+
+🔐 Authentication & Profile
+
+Admin login/logout using JWT
+
+Demo admin credentials
+
+Profile page with editable display name
+
+Dynamic greeting header
+
+Avatar with initial-based icon
+
+🎨 UI / UX
+
+GitHub-style dark theme
+
+Responsive sidebar navigation
+
+Sticky header with profile access
+
+Snackbar notifications (success / error / info)
+
+Smooth transitions and hover effects
+
+Fully responsive layout
+
+🤖 AI Features
+
+OpenAI-powered product recommendations
+
+Fallback rule-based insights if API is unavailable
+
+Configurable temperature for varied responses
+
+📄 Pages
+Page	Description
+Login	Admin authentication using demo credentials
+Dashboard	Analytics overview with charts and statistics
+Products	Product list with edit, delete, and sell actions
+Add Product	Multi-step product creation form
+Profile	User profile with display name customization
+📁 Project Structure
 ecommerce-admin-dashboard/
 ├── app/
 │   ├── api/
@@ -147,30 +163,28 @@ ecommerce-admin-dashboard/
 ├── tsconfig.json
 └── README.md
 
-```text
----
-
-## 🔑 Demo Credentials
-
+🔑 Demo Credentials
 Email: admin@xyz.com
 Password: passforadmin
 
 Email: admin2@xyz.com
 Password: passforadmin
 
----
+🚀 Getting Started (Step-by-Step)
 
-## 🚀 Getting Started (Step-by-Step)
+Follow these steps to run the project locally.
 
-Follow these instructions to run the project locally.
+1️⃣ Clone the Repository
+git clone https://github.com/DrownedDragon512/ecommerce-admin-dashboard.git
+cd ecommerce-admin-dashboard
 
-### 1. Clone the Repository
-```bash
-- git clone https://github.com/DrownedDragon512/ecommerce-admin-dashboard.git
-- cd ecommerce-admin-dashboard
-- npm install
+2️⃣ Install Dependencies
+npm install
 
-- Create a .env.local file in the root directory:
+3️⃣ Environment Variables
+
+Create a .env.local file in the root directory:
+
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -178,10 +192,8 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 OPENAI_API_KEY=your_openai_api_key
 
--npm run dev
-- go to http://localhost:3000
+4️⃣ Run the Development Server
+npm run dev
 
 
-
-
-
+Open 👉 http://localhost:3000
