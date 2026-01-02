@@ -84,28 +84,33 @@ This project uses the following stack:
 
 ---
 
-## Feature-Based Structure
+## 📁 Project Structure
 
+```text
 ecommerce-admin-dashboard/
-├── app/                         # Next.js App Router
-│   ├── api/                     # Backend API routes
+├── app/
+│   ├── api/
 │   │   ├── ai/
-│   │   │   └── suggest/          # AI product suggestions (OpenAI)
+│   │   │   └── suggest/
 │   │   │       └── route.ts
-│   │   ├── auth/                # Authentication APIs
+│   │   ├── auth/
 │   │   │   ├── login/
+│   │   │   │   └── route.ts
 │   │   │   ├── logout/
+│   │   │   │   └── route.ts
 │   │   │   ├── register/
+│   │   │   │   └── route.ts
 │   │   │   └── verify/
-│   │   └── products/            # Product CRUD APIs
+│   │   │       └── route.ts
+│   │   └── products/
 │   │       ├── route.ts
-│   │       ├── [id]/
-│   │       │   ├── route.ts
-│   │       │   ├── route-new.ts
-│   │       │   └── sold/         # Mark product as sold
-│   │       │       └── route.ts
+│   │       └── [id]/
+│   │           ├── route.ts
+│   │           ├── route-new.ts
+│   │           └── sold/
+│   │               └── route.ts
 │   │
-│   ├── dashboard/               # Admin dashboard pages & components
+│   ├── dashboard/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── StatsGrid.tsx
@@ -115,28 +120,33 @@ ecommerce-admin-dashboard/
 │   │   ├── AiAdvisor.tsx
 │   │   ├── Snackbar.tsx
 │   │   ├── ConfirmModal.tsx
-│   │   ├── profile/             # Admin profile
-│   │   └── products/            # Product UI pages
+│   │   ├── profile/
+│   │   │   └── page.tsx
+│   │   └── products/
 │   │       ├── page.tsx
 │   │       ├── new/
+│   │       │   └── page.tsx
 │   │       └── [id]/
+│   │           └── page.tsx
 │   │
-│   ├── login/                   # Login page
-│   ├── layout.tsx               # Root layout
-│   ├── globals.css              # Global styles
-│   └── page.tsx                 # Landing / redirect
+│   ├── login/
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   ├── globals.css
+│   └── page.tsx
 │
-├── lib/                         # Core utilities
-│   ├── auth.ts                  # JWT auth helpers
-│   ├── cloudinary.ts            # Image upload config
-│   └── mongodb.ts               # Database connection
+├── lib/
+│   ├── auth.ts
+│   ├── cloudinary.ts
+│   └── mongodb.ts
 │
-├── public/                      # Static assets
-├── .env.local                   # Environment variables
+├── public/
+├── .env.local
 ├── next.config.ts
 ├── package.json
 ├── tsconfig.json
 └── README.md
+
 
 ---
 
@@ -170,5 +180,8 @@ OPENAI_API_KEY=your_openai_api_key
 
 -npm run dev
 - go to http://localhost:3000
+
+
+
 
 
