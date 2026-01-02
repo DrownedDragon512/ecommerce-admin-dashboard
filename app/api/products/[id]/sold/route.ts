@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
+import { getAuthUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: productId } = await params;
     const body = await req.json();
     const units = body.units as number;
@@ -29,7 +35,7 @@ export async function POST(
 
     const product = await db
       .collection("products")
-      .findOne({ _id: new ObjectId(productId) });
+      .findOne({ _id: new ObjectId(productId), userId: user.userId });
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -49,7 +55,7 @@ export async function POST(
     const result = await db
       .collection("products")
       .updateOne(
-        { _id: new ObjectId(productId) },
+        { _id: new ObjectId(productId), userId: user.userId },
         {
           $set: {
             stock: currentStock - units,

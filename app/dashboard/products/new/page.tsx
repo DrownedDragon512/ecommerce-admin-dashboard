@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 const basicSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
 });
 
 const pricingSchema = z.object({
@@ -23,6 +24,7 @@ export default function NewProductPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    category: "",
     price: 0,
     stock: 0,
     image: "",
@@ -36,6 +38,7 @@ export default function NewProductPage() {
     const result = basicSchema.safeParse({
       name: formData.name,
       description: formData.description,
+      category: formData.category,
     });
 
     if (!result.success) {
@@ -100,6 +103,7 @@ export default function NewProductPage() {
         body: JSON.stringify({
           name: formData.name,
           description: formData.description,
+          category: formData.category,
           price: formData.price,
           stock: formData.stock,
           image: formData.image,
@@ -120,6 +124,7 @@ export default function NewProductPage() {
       setFormData({
         name: "",
         description: "",
+        category: "",
         price: 0,
         stock: 0,
         image: "",
@@ -175,6 +180,25 @@ export default function NewProductPage() {
           />
           {errors.description && (
             <p className="text-sm text-red-600">{errors.description}</p>
+          )}
+
+          <select
+            className="w-full rounded border px-3 py-2"
+            value={formData.category}
+            onChange={(e) =>
+              setFormData({ ...formData, category: e.target.value })
+            }
+          >
+            <option value="">Select Category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Stationery">Stationery</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Home">Home</option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.category && (
+            <p className="text-sm text-red-600">{errors.category}</p>
           )}
 
           <button

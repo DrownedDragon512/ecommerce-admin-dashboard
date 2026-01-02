@@ -8,6 +8,7 @@ type Product = {
   _id: string;
   name: string;
   description: string;
+  category: string;
   price: number;
   stock: number;
   sold?: number;
@@ -26,7 +27,14 @@ export default function ProductsPage() {
 
   const loadProducts = async () => {
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products", {
+        cache: "no-store",
+        credentials: "include",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+        },
+      });
       if (res.ok) {
         const data = await res.json();
         const items = (data.products || []).map((p: any) => ({
@@ -34,15 +42,20 @@ export default function ProductsPage() {
           _id: p._id || p.id || "",
         }));
         setProducts(items);
+      } else {
+        console.error("Failed to load products:", res.status);
+        setProducts([]);
       }
     } catch (error) {
       console.error("Failed to load products", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setLoading(true);
     loadProducts();
   }, []);
 
@@ -170,8 +183,9 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-gray-900 font-medium">{product.name}</div>
-                      <div className="text-sm text-gray-600 mt-1 max-h-0 overflow-hidden opacity-0 transition-all duration-300 group-hover:max-h-20 group-hover:opacity-100">
-                        {product.description}
+                      <div className="text-sm text-gray-600 mt-1 max-h-0 overflow-hidden opacity-0 transition-all duration-300 group-hover:max-h-32 group-hover:opacity-100">
+                        <div>{product.description}</div>
+                        <div className="mt-1 text-gray-500">Category: {product.category}</div>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-900">₹{product.price.toLocaleString()}</td>

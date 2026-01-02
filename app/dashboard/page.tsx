@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/mongodb";
+import { getAuthUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +13,23 @@ type Stats = {
 };
 
 async function getStats(): Promise<Stats> {
+  const user = await getAuthUser();
+  if (!user) {
+    return {
+      totalProducts: 0,
+      totalInventory: 0,
+      lowStockProducts: 0,
+      totalValue: 0,
+      totalSold: 0,
+      totalIntake: 0,
+    };
+  }
+
   const db = await getDb();
-  const products = await db.collection("products").find({}).toArray();
+  const products = await db
+    .collection("products")
+    .find({ userId: user.userId })
+    .toArray();
 
   const totalProducts = products.length;
   const totalInventory = products.reduce(

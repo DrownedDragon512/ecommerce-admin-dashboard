@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { z } from "zod";
 import { uploadImage } from "@/lib/cloudinary";
+import { getAuthUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: paramId } = await params;
 
     if (!paramId || !ObjectId.isValid(paramId)) {
@@ -29,7 +35,7 @@ export async function GET(
 
     const product = await db
       .collection("products")
-      .findOne({ _id: new ObjectId(paramId) });
+      .findOne({ _id: new ObjectId(paramId), userId: user.userId });
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -55,6 +61,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: paramId } = await params;
     const body = await req.json();
 
@@ -75,7 +86,7 @@ export async function PUT(
     const result = await db
       .collection("products")
       .updateOne(
-        { _id: new ObjectId(paramId) },
+        { _id: new ObjectId(paramId), userId: user.userId },
         {
           $set: {
             name: validatedData.name,
@@ -112,6 +123,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: paramId } = await params;
 
     if (!paramId || !ObjectId.isValid(paramId)) {
@@ -122,7 +138,7 @@ export async function DELETE(
 
     const result = await db
       .collection("products")
-      .deleteOne({ _id: new ObjectId(paramId) });
+      .deleteOne({ _id: new ObjectId(paramId), userId: user.userId });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });

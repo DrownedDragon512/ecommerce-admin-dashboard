@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 const ADMIN_CREDENTIALS = [
-  { email: "admin@xyz.com", password: "passforadmin" },
-  { email: "admin2@xyz.com", password: "passforadmin" },
+  { email: "admin@xyz.com", password: "passforadmin", userId: "user_1" },
+  { email: "admin2@xyz.com", password: "passforadmin", userId: "user_2" },
 ];
 
 export async function POST(req: Request) {
@@ -36,13 +36,13 @@ export async function POST(req: Request) {
     }
 
     const token = jwt.sign(
-      { email: email, name: "Admin" },
+      { email: validAdmin.email, name: "Admin", userId: validAdmin.userId },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     const response = NextResponse.json(
-      { message: "Login successful", user: { email: email, name: "Admin" }, success: true },
+      { message: "Login successful", user: { email: validAdmin.email, name: "Admin" }, success: true },
       { status: 200 }
     );
 
