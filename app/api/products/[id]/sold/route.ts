@@ -33,8 +33,20 @@ export async function POST(
 
     const db = await getDb();
 
-    const product = await db
-      .collection("products")
+    type SaleEntry = { date: Date; units: number; revenue: number };
+    type ProductDoc = {
+      _id: ObjectId;
+      userId: string;
+      stock?: number;
+      sold?: number;
+      totalIntake?: number;
+      price?: number;
+      salesHistory?: SaleEntry[];
+    };
+
+    const products = db.collection<ProductDoc>("products");
+
+    const product = await products
       .findOne({ _id: new ObjectId(productId), userId: user.userId });
 
     if (!product) {
@@ -52,18 +64,24 @@ export async function POST(
       );
     }
 
-    const result = await db
-      .collection("products")
-      .updateOne(
-        { _id: new ObjectId(productId), userId: user.userId },
-        {
-          $set: {
-            stock: currentStock - units,
-            sold: currentSold + units,
-            totalIntake: currentIntake + (product.price * units),
-          },
-        }
-      );
+    const price = product.price ?? 0;
+    const saleRecord = {
+      date: new Date(),
+      units,
+      revenue: price * units,
+    };
+
+    const result = await products.updateOne(
+      { _id: new ObjectId(productId), userId: user.userId },
+      {
+        $set: {
+          stock: currentStock - units,
+          sold: currentSold + units,
+          totalIntake: currentIntake + price * units,
+        },
+        $push: { salesHistory: saleRecord },
+      }
+    );
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });

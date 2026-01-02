@@ -7,14 +7,14 @@ type RevenueCategoryChartProps = {
 };
 
 const COLORS = [
-  "#10b981", // emerald
-  "#06b6d4", // cyan
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#14b8a6", // teal
-  "#f97316", // orange
+  "#3fb950", // green
+  "#58a6ff", // blue
+  "#a371f7", // purple
+  "#d29922", // gold
+  "#f85149", // red
+  "#1f6feb", // accent blue
+  "#8b949e", // muted gray
+  "#79c0ff", // light blue
 ];
 
 export function RevenueCategoryChart({ categoryStats }: RevenueCategoryChartProps) {
@@ -72,7 +72,7 @@ export function RevenueCategoryChart({ categoryStats }: RevenueCategoryChartProp
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ color: "#cbd5e1" }} />
+          <Legend wrapperStyle={{ color: "#c9d1d9" }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

@@ -21,9 +21,9 @@ export function MonthlySalesChart({ data }: MonthlySalesChartProps) {
         data={data}
         margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-        <XAxis dataKey="month" stroke="#9ca3af" />
-        <YAxis stroke="#9ca3af" />
+        <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
+        <XAxis dataKey="month" stroke="#c9d1d9" />
+        <YAxis stroke="#c9d1d9" />
         <Tooltip
           contentStyle={{
             backgroundColor: "#1e293b",
@@ -33,22 +33,22 @@ export function MonthlySalesChart({ data }: MonthlySalesChartProps) {
           }}
           labelStyle={{ color: "#cbd5e1" }}
         />
-        <Legend wrapperStyle={{ color: "#9ca3af" }} />
+        <Legend wrapperStyle={{ color: "#c9d1d9" }} />
         <Line
           type="monotone"
           dataKey="sales"
-          stroke="#10b981"
+          stroke="#3fb950"
           strokeWidth={2}
-          dot={{ fill: "#10b981", r: 4 }}
+          dot={{ fill: "#3fb950", r: 4 }}
           activeDot={{ r: 6 }}
           name="Sales (₹)"
         />
         <Line
           type="monotone"
           dataKey="units"
-          stroke="#3b82f6"
+          stroke="#58a6ff"
           strokeWidth={2}
-          dot={{ fill: "#3b82f6", r: 4 }}
+          dot={{ fill: "#58a6ff", r: 4 }}
           activeDot={{ r: 6 }}
           name="Units Sold"
         />

@@ -50,9 +50,16 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-[#0b0f1a] text-gray-200">
       {/* Sidebar */}
       <aside className="w-64 bg-[#0f172a] p-6">
-        <h2 className="text-xl font-bold text-green-400 mb-8">
-          AdminPanel
-        </h2>
+        <div className="flex items-center gap-3 mb-8">
+          <img
+            src="/favicon.ico"
+            alt="Logo"
+            className="h-9 w-9 rounded-full border border-slate-700 bg-slate-800"
+          />
+          <h2 className="text-xl font-bold text-green-400">
+            Your Panel
+          </h2>
+        </div>
 
         <nav className="space-y-3 text-sm">
           <a

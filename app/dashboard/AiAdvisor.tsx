@@ -69,7 +69,6 @@ export function AiAdvisor({ summary }: AiAdvisorProps) {
           </div>
         )}
       </div>
-      <div className="mt-3 text-[11px] text-gray-500">Uses your metrics; falls back to local rules if no AI key.</div>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { getAuthUser } from "@/lib/auth";
 import { AiAdvisor } from "./AiAdvisor";
 import { MonthlySalesChart } from "./MonthlySalesChart";
 import { RevenueCategoryChart } from "./RevenueCategoryChart";
+import { SalesTrendChart } from "./SalesTrendChart";
+import { StatsGrid } from "./StatsGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +20,20 @@ type Stats = {
   lowStockList: ProductStat[];
   sellThrough: number;
   monthlySales: MonthlySalesData[];
+  salesTrend7: SalesTrendPoint[];
+  salesTrend30: SalesTrendPoint[];
 };
 
 type MonthlySalesData = {
   month: string;
   sales: number;
   units: number;
+};
+
+type SalesTrendPoint = {
+  date: string;
+  units: number;
+  revenue: number;
 };
 
 type CategoryStat = {
@@ -55,6 +65,8 @@ async function getStats(): Promise<Stats> {
       lowStockList: [],
       sellThrough: 0,
       monthlySales: [],
+      salesTrend7: [],
+      salesTrend30: [],
     };
   }
 
@@ -153,6 +165,46 @@ async function getStats(): Promise<Stats> {
 
   const monthlySales = Array.from(monthlyMap.values());
 
+  const now = new Date();
+  const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+  const salesMap = new Map<string, { units: number; revenue: number }>();
+
+  for (const p of products) {
+    const history = Array.isArray((p as any).salesHistory)
+      ? (p as any).salesHistory
+      : [];
+    for (const entry of history) {
+      const entryDate = entry?.date ? new Date(entry.date) : null;
+      if (!entryDate || Number.isNaN(entryDate.getTime())) continue;
+      const diffDays = (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (diffDays > 30) continue;
+      const key = dayKey(entryDate);
+      const bucket = salesMap.get(key) || { units: 0, revenue: 0 };
+      bucket.units += entry.units || 0;
+      bucket.revenue += entry.revenue || 0;
+      salesMap.set(key, bucket);
+    }
+  }
+
+  const buildTrend = (days: number): SalesTrendPoint[] => {
+    const points: SalesTrendPoint[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      const key = dayKey(d);
+      const bucket = salesMap.get(key) || { units: 0, revenue: 0 };
+      points.push({
+        date: key.slice(5),
+        units: bucket.units,
+        revenue: bucket.revenue,
+      });
+    }
+    return points;
+  };
+
+  const salesTrend30 = buildTrend(30);
+  const salesTrend7 = salesTrend30.slice(-7);
+
   return {
     totalProducts,
     totalInventory,
@@ -165,6 +217,8 @@ async function getStats(): Promise<Stats> {
     lowStockList,
     sellThrough,
     monthlySales,
+    salesTrend7,
+    salesTrend30,
   };
 }
 
@@ -176,86 +230,14 @@ export default async function DashboardPage() {
       <h1 className="text-3xl font-bold">Dashboard</h1>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Products */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Total Products</div>
-          <div className="text-3xl font-bold text-white">
-            {stats.totalProducts}
-          </div>
-        </div>
+      <StatsGrid stats={stats} />
 
-        {/* Total Sold */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Total Sold</div>
-          <div className="text-3xl font-bold text-green-400">
-            {stats.totalSold}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">units sold</div>
-        </div>
-
-        {/* Total Value Sold */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Total Value Sold</div>
-          <div className="text-3xl font-bold text-blue-400">
-            ₹{stats.totalIntake.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">revenue from sales</div>
-        </div>
-
-        {/* Current Inventory */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Current Inventory</div>
-          <div className="text-3xl font-bold text-white">
-            {stats.totalInventory.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">units in stock</div>
-        </div>
-
-        {/* Low Stock Alert */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Low Stock Alert</div>
-          <div className="text-3xl font-bold text-orange-400">
-            {stats.lowStockProducts}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">products &lt; 10 units</div>
-        </div>
-
-        {/* Inventory Value */}
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="text-sm text-gray-400 mb-2">Inventory Value</div>
-          <div className="text-3xl font-bold text-purple-400">
-            ₹{stats.totalValue.toLocaleString()}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
-          <RevenueCategoryChart categoryStats={stats.categoryStats} />
-        </div>
-
-        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-gray-400">Sell-through Rate</div>
-            <div className="text-xs text-gray-500">Sold vs stock</div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div
-              className="h-24 w-24 rounded-full border border-slate-700 flex items-center justify-center text-lg font-bold text-white anim-ring"
-              style={{
-                background: `conic-gradient(#22c55e ${stats.sellThrough}%, #1f2937 0)`
-              }}
-            >
-              {Math.round(stats.sellThrough)}%
-            </div>
-            <div className="text-sm text-gray-400 space-y-1">
-              <div className="text-white text-base font-semibold">Sell-through</div>
-              <div className="text-xs text-gray-500">Higher is better</div>
-              <div className="text-xs text-gray-500">{stats.totalSold} sold · {stats.totalInventory} in stock</div>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <SalesTrendChart
+          salesTrend7={stats.salesTrend7}
+          salesTrend30={stats.salesTrend30}
+        />
+        <RevenueCategoryChart categoryStats={stats.categoryStats} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

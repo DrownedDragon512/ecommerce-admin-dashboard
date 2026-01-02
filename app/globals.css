@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+/* GitHub Dark palette */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gh-bg: #0d1117;
+  --gh-surface: #161b22;
+  --gh-surface-2: #1f242c;
+  --gh-border: #30363d;
+  --gh-border-2: #21262d;
+  --gh-text: #c9d1d9;
+  --gh-muted: #8b949e;
+  --gh-subtle: #6e7681;
+  --gh-blue: #58a6ff;
+  --gh-green: #3fb950;
+  --gh-purple: #a371f7;
+  --gh-orange: #d29922;
+  --gh-red: #f85149;
+
+  --background: var(--gh-bg);
+  --foreground: var(--gh-text);
 }
 
 @theme inline {
@@ -14,9 +29,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--gh-bg);
+    --foreground: var(--gh-text);
   }
+}
+
+html {
+  background: var(--background);
+  color-scheme: dark;
 }
 
 body {
@@ -24,6 +44,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Map common utility colors to GitHub Dark tones */
+[class*="bg-slate-900"] { background-color: var(--gh-surface) !important; }
+[class*="bg-slate-800"] { background-color: var(--gh-bg) !important; }
+[class*="bg-slate-700"] { background-color: var(--gh-surface-2) !important; }
+[class*="bg-slate-900/40"], [class*="bg-slate-900\/40"] { background-color: rgba(13, 17, 23, 0.4) !important; }
+[class*="border-slate-700"] { border-color: var(--gh-border) !important; }
+[class*="border-slate-800"] { border-color: var(--gh-border-2) !important; }
+[class*="text-white"] { color: var(--gh-text) !important; }
+[class*="text-gray-400"] { color: var(--gh-muted) !important; }
+[class*="text-gray-500"] { color: var(--gh-subtle) !important; }
+[class*="text-green-400"] { color: var(--gh-green) !important; }
+[class*="text-blue-400"] { color: var(--gh-blue) !important; }
+[class*="text-purple-400"] { color: var(--gh-purple) !important; }
+[class*="text-orange-400"] { color: var(--gh-orange) !important; }
+[class*="text-red-400"] { color: var(--gh-red) !important; }
 
 /* Dashboard animation helpers */
 .anim-bar {
