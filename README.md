@@ -84,16 +84,6 @@ This project uses the following stack:
 
 ---
 
-## Technical Architecture
-
-High-level orchestration of client-server interactions, encompassing JWT authentication strategies, server-side rendering (SSR) data ingestion pipelines, and asynchronous heuristic inference via external AI endpoints.
-
-<div align="center">
-  <img src="finalWorkflow.svg" alt="System Architecture Workflow" width="100%" />
-</div>
-
----
-
 ## 📁 Project Structure
 
 ```text
