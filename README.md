@@ -2,7 +2,7 @@
 
 Built with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, and **Recharts**
 
-🔗 **View Demo:**  
+**View Demo:**  
 https://ecommerce-admin-dashboard-1pn4.vercel.app/dashboard
 
 ---
@@ -36,28 +36,28 @@ This project uses the following stack:
 
 ## Features
 
-### 🧱 Core Dashboard
+### Core Dashboard
 - Real-time statistics (products, revenue, stock, sales)
 - Monthly sales chart (line + area)
 - Revenue by category donut chart
 - Sales trends with 7-day & 30-day views
 - AI advisor for smart product insights
 
-### 📦 Product Management
+### Product Management
 - Add products using a multi-step form
 - Edit and delete products with confirmation modal
 - Mark products as sold (units sold tracking)
 - Product listing with complete details
 - Cloudinary image upload support
 
-### 🔐 Authentication & Profile
+### Authentication & Profile
 - Admin login/logout using JWT
 - Demo admin credentials
 - Profile page with editable display name
 - Dynamic greeting header
 - Avatar with initial-based icon
 
-### 🎨 UI / UX
+### UI / UX
 - GitHub Dark theme
 - Responsive sidebar navigation
 - Sticky header with profile access
@@ -65,7 +65,7 @@ This project uses the following stack:
 - Smooth transitions and hover effects
 - Fully responsive layout
 
-### 🤖 AI Features
+### AI Features
 - OpenAI-powered product recommendations
 - Fallback rule-based insights if API is unavailable
 - Configurable temperature for varied responses
@@ -149,7 +149,7 @@ ecommerce-admin-dashboard/
 ```
 ---
 
-## 🔑 Demo Credentials
+## Demo Credentials
 
 Email: admin@xyz.com
 Password: passforadmin
@@ -159,7 +159,7 @@ Password: passforadmin
 
 ---
 
-## 🚀 Getting Started (Step-by-Step)
+## Getting Started (Step-by-Step)
 
 Follow these instructions to run the project locally.
 - git clone https://github.com/DrownedDragon512/ecommerce-admin-dashboard.git
