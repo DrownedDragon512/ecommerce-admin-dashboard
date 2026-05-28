@@ -12,10 +12,11 @@ export function ProfileClient({ initialName, email, userId }: ProfileClientProps
   const [name, setName] = useState(initialName);
   const [status, setStatus] = useState<"idle" | "saved">("idle");
 
+  // Load saved display name from local storage on component mount
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem("profile-display-name") : null;
-    if (saved) {
-      setName(saved);
+    const savedDisplayName = typeof window !== "undefined" ? localStorage.getItem("profile-display-name") : null;
+    if (savedDisplayName) {
+      setName(savedDisplayName);
     }
   }, []);
 
