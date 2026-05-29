@@ -7,36 +7,36 @@ type ProductActionsProps = {
   onDelete: () => void;
 };
 
-export function ProductActions({ productId, onDelete }: ProductActionsProps) {
-  const { open: openConfirm, Modal: ConfirmModal } = useConfirmModal();
+export function ProductActions({ productId: id, onDelete }: ProductActionsProps) {
+  const { open, Modal } = useConfirmModal();
 
   const handleDelete = async () => {
-    const confirmed = await openConfirm("Delete Product", "Are you sure you want to delete this product? This action cannot be undone.");
-    if (!confirmed) {
-      return;
-    }
+    const ok = await open(
+      "Delete Product",
+      "Are you sure you want to delete this product? This action cannot be undone."
+    );
+    
+    if (!ok) return;
 
     try {
-      const res = await fetch(`/api/products/${productId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
 
       if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(error.error || "Failed to delete product");
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(err.error || "Failed to delete product");
         return;
       }
 
       alert("Product deleted successfully!");
       onDelete();
-    } catch (error) {
+    } catch (err) {
       alert("Something went wrong");
     }
   };
 
   return (
     <>
-      <ConfirmModal />
+      <Modal />
       <div className="space-x-2 text-sm">
         <button
           onClick={() => alert("Edit functionality coming soon!")}
