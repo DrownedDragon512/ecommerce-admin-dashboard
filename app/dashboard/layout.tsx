@@ -1,7 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+
+// Extracted navigation configuration for better maintainability and scalability
+const NAV_LINKS = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Products", href: "/dashboard/products" },
+  { label: "Add Product", href: "/dashboard/products/new" },
+];
 
 export default function DashboardLayout({
   children,
@@ -42,8 +50,12 @@ export default function DashboardLayout({
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   if (loading) {
@@ -64,60 +76,47 @@ export default function DashboardLayout({
             alt="Logo"
             className="h-9 w-9 rounded-full border border-slate-700 bg-slate-800"
           />
-          <h2 className="text-xl font-bold text-green-400">
-            Your Panel
-          </h2>
+          <h2 className="text-xl font-bold text-green-400">Your Panel</h2>
         </div>
 
         <nav className="space-y-3 text-sm">
-          <a
-            href="/dashboard"
-            className="block rounded px-3 py-2 hover:bg-slate-800"
-          >
-            Dashboard
-          </a>
-
-          <a
-            href="/dashboard/products"
-            className="block rounded px-3 py-2 hover:bg-slate-800"
-          >
-            Products
-          </a>
-
-          <a
-            href="/dashboard/products/new"
-            className="block rounded px-3 py-2 hover:bg-slate-800"
-          >
-            Add Product
-          </a>
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="block rounded px-3 py-2 hover:bg-slate-800 transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
 
           <button
             onClick={handleLogout}
-            className="block w-full text-left rounded px-3 py-2 hover:bg-slate-800 text-red-400 mt-8"
+            className="block w-full text-left rounded px-3 py-2 hover:bg-slate-800 text-red-400 mt-8 transition-colors"
           >
             Logout
           </button>
         </nav>
       </aside>
 
-      {/* Main */}
+      {/* Main Content Area */}
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-slate-800 bg-[#0f172a]/80 px-6 py-4 sticky top-0 z-10 backdrop-blur">
-          <div className="text-3xl font-semibold text-white">Hello {displayName || "Admin"} !</div>
+          <div className="text-3xl font-semibold text-white">
+            Hello {displayName || "Admin"} !
+          </div>
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/dashboard/profile"
               className="relative h-10 w-10 rounded-full bg-linear-to-br from-emerald-500 to-sky-500 flex items-center justify-center text-white font-semibold shadow-lg hover:scale-105 transition"
               title="Profile"
             >
               <span className="sr-only">Profile</span>
               P
-            </a>
+            </Link>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
