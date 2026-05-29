@@ -8,7 +8,7 @@ import { StatsGrid } from "./StatsGrid";
 
 export const dynamic = "force-dynamic";
 
-type Stats = {
+interface Stats {
   totalProducts: number;
   totalInventory: number;
   lowStockProducts: number;
@@ -22,36 +22,41 @@ type Stats = {
   monthlySales: MonthlySalesData[];
   salesTrend7: SalesTrendPoint[];
   salesTrend30: SalesTrendPoint[];
-};
+}
 
-type MonthlySalesData = {
+interface MonthlySalesData {
   month: string;
   sales: number;
   units: number;
-};
+}
 
-type SalesTrendPoint = {
+interface SalesTrendPoint {
   date: string;
   units: number;
   revenue: number;
-};
+}
 
-type CategoryStat = {
+interface CategoryStat {
   category: string;
   stock: number;
   sold: number;
   value: number;
-};
+}
 
-type ProductStat = {
+interface ProductStat {
   name: string;
   stock: number;
   sold: number;
   value: number;
-};
+}
 
+/**
+ * Fetches and calculates all aggregated statistics required for the dashboard view.
+ * Processes inventory totals, categorical breakdowns, and historical sales trends.
+ */
 async function getStats(): Promise<Stats> {
   const user = await getAuthUser();
+  
   if (!user) {
     return {
       totalProducts: 0,
@@ -76,39 +81,49 @@ async function getStats(): Promise<Stats> {
     .find({ userId: user.userId })
     .toArray();
 
+  // --- Core Aggregations ---
   const totalProducts = products.length;
+  
   const totalInventory = products.reduce(
     (sum, product) => sum + (product.stock || 0),
     0
   );
+  
   const lowStockProducts = products.filter(
     (product) => (product.stock || 0) < 10
   ).length;
+  
   const totalValue = products.reduce(
     (sum, product) => sum + (product.price || 0) * (product.stock || 0),
     0
   );
+  
   const totalSold = products.reduce(
     (sum, product) => sum + (product.sold || 0),
     0
   );
+  
   const totalIntake = products.reduce(
     (sum, product) => sum + (product.totalIntake || 0),
     0
   );
 
+  // --- Category Statistics ---
   const categoryMap = new Map<string, CategoryStat>();
-  for (const p of products) {
-    const catName = p.category || "Others";
+  
+  for (const product of products) {
+    const catName = product.category || "Others";
     const current = categoryMap.get(catName) || {
       category: catName,
       stock: 0,
       sold: 0,
       value: 0,
     };
-    current.stock += p.stock || 0;
-    current.sold += p.sold || 0;
-    current.value += (p.price || 0) * (p.stock || 0);
+    
+    current.stock += product.stock || 0;
+    current.sold += product.sold || 0;
+    current.value += (product.price || 0) * (product.stock || 0);
+    
     categoryMap.set(catName, current);
   }
 
@@ -116,23 +131,24 @@ async function getStats(): Promise<Stats> {
     (a, b) => b.value - a.value
   );
 
+  // --- Product Performance ---
   const topSelling = [...products]
-    .map((p) => ({
-      name: p.name,
-      stock: p.stock || 0,
-      sold: p.sold || 0,
-      value: (p.price || 0) * (p.sold || 0),
+    .map((product) => ({
+      name: product.name,
+      stock: product.stock || 0,
+      sold: product.sold || 0,
+      value: (product.price || 0) * (product.sold || 0),
     }))
     .sort((a, b) => b.sold - a.sold)
     .slice(0, 5);
 
   const lowStockList = [...products]
-    .filter((p) => (p.stock || 0) < 10)
-    .map((p) => ({
-      name: p.name,
-      stock: p.stock || 0,
-      sold: p.sold || 0,
-      value: (p.price || 0) * (p.stock || 0),
+    .filter((product) => (product.stock || 0) < 10)
+    .map((product) => ({
+      name: product.name,
+      stock: product.stock || 0,
+      sold: product.sold || 0,
+      value: (product.price || 0) * (product.stock || 0),
     }))
     .sort((a, b) => a.stock - b.stock)
     .slice(0, 5);
@@ -140,48 +156,61 @@ async function getStats(): Promise<Stats> {
   const sellThroughBase = totalSold + totalInventory;
   const sellThrough = sellThroughBase > 0 ? (totalSold / sellThroughBase) * 100 : 0;
 
+  // --- Monthly Sales Mapping ---
   const monthlyMap = new Map<string, MonthlySalesData>();
   const monthNames = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
+  
   const currentYear = new Date().getFullYear();
-  for (let m = 0; m < 12; m++) {
-    const monthKey = monthNames[m];
+  
+  // Initialize all months to 0
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const monthKey = monthNames[monthIndex];
     monthlyMap.set(monthKey, { month: monthKey, sales: 0, units: 0 });
   }
 
-  for (const p of products) {
-    const createdDate = p.createdAt ? new Date(p.createdAt) : null;
+  for (const product of products) {
+    const createdDate = product.createdAt ? new Date(product.createdAt) : null;
     if (createdDate && createdDate.getFullYear() === currentYear) {
       const monthIdx = createdDate.getMonth();
       const monthKey = monthNames[monthIdx];
       const current = monthlyMap.get(monthKey) || { month: monthKey, sales: 0, units: 0 };
-      current.sales += (p.price || 0) * (p.sold || 0);
-      current.units += p.sold || 0;
+      
+      current.sales += (product.price || 0) * (product.sold || 0);
+      current.units += product.sold || 0;
+      
       monthlyMap.set(monthKey, current);
     }
   }
 
   const monthlySales = Array.from(monthlyMap.values());
 
+  // --- Historical Trend Mapping (Last 30 Days) ---
   const now = new Date();
-  const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+  const dayKey = (dateObj: Date) => dateObj.toISOString().slice(0, 10);
   const salesMap = new Map<string, { units: number; revenue: number }>();
 
-  for (const p of products) {
-    const history = Array.isArray((p as any).salesHistory)
-      ? (p as any).salesHistory
+  for (const product of products) {
+    // Note: Type assertions preserved from original logic to avoid breaking build
+    const history = Array.isArray((product as any).salesHistory)
+      ? (product as any).salesHistory
       : [];
+      
     for (const entry of history) {
       const entryDate = entry?.date ? new Date(entry.date) : null;
       if (!entryDate || Number.isNaN(entryDate.getTime())) continue;
+      
       const diffDays = (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24);
       if (diffDays > 30) continue;
+      
       const key = dayKey(entryDate);
       const bucket = salesMap.get(key) || { units: 0, revenue: 0 };
+      
       bucket.units += entry.units || 0;
       bucket.revenue += entry.revenue || 0;
+      
       salesMap.set(key, bucket);
     }
   }
@@ -189,10 +218,11 @@ async function getStats(): Promise<Stats> {
   const buildTrend = (days: number): SalesTrendPoint[] => {
     const points: SalesTrendPoint[] = [];
     for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      const key = dayKey(d);
+      const targetDate = new Date(now);
+      targetDate.setDate(now.getDate() - i);
+      const key = dayKey(targetDate);
       const bucket = salesMap.get(key) || { units: 0, revenue: 0 };
+      
       points.push({
         date: key.slice(5),
         units: bucket.units,
@@ -229,9 +259,10 @@ export default async function DashboardPage() {
     <div className="p-8 space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
 
-      {/* Stats Grid */}
+      {/* Stats Grid Overview */}
       <StatsGrid stats={stats} />
 
+      {/* High-Level Trends */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <SalesTrendChart
           salesTrend7={stats.salesTrend7}
@@ -240,7 +271,9 @@ export default async function DashboardPage() {
         <RevenueCategoryChart categoryStats={stats.categoryStats} />
       </div>
 
+      {/* Detail Modules */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* Top Sellers Panel */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm text-gray-400">Top Sellers (Stock vs Sold)</div>
@@ -250,15 +283,17 @@ export default async function DashboardPage() {
             {stats.topSelling.length === 0 ? (
               <div className="text-sm text-gray-500">No sales data yet.</div>
             ) : (
-              stats.topSelling.map((p, idx) => {
+              stats.topSelling.map((product, idx) => {
                 const maxSold = stats.topSelling[0]?.sold || 1;
-                const soldWidth = Math.max(4, (p.sold / maxSold) * 100);
-                const stockWidth = Math.max(4, (p.stock / Math.max(...stats.topSelling.map(ts => ts.stock || 1))) * 100);
+                const soldWidth = Math.max(4, (product.sold / maxSold) * 100);
+                const maxStock = Math.max(...stats.topSelling.map(ts => ts.stock || 1));
+                const stockWidth = Math.max(4, (product.stock / maxStock) * 100);
+                
                 return (
-                  <div key={`${p.name}-${idx}`} className="space-y-1">
+                  <div key={`${product.name}-${idx}`} className="space-y-1">
                     <div className="flex justify-between text-xs text-gray-400">
-                      <span>{p.name}</span>
-                      <span>{p.sold} sold · {p.stock} stock</span>
+                      <span>{product.name}</span>
+                      <span>{product.sold} sold · {product.stock} stock</span>
                     </div>
                     <div className="h-3 rounded bg-slate-700 overflow-hidden flex gap-1">
                       <div
@@ -279,6 +314,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Low Stock Panel */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm text-gray-400">Low Stock Watch</div>
@@ -288,13 +324,13 @@ export default async function DashboardPage() {
             {stats.lowStockList.length === 0 ? (
               <div className="text-sm text-gray-500">All stocks healthy.</div>
             ) : (
-              stats.lowStockList.map((p, idx) => {
-                const pct = Math.min(100, (p.stock / 10) * 100);
+              stats.lowStockList.map((product, idx) => {
+                const pct = Math.min(100, (product.stock / 10) * 100);
                 return (
-                  <div key={`${p.name}-${idx}`} className="space-y-1">
+                  <div key={`${product.name}-${idx}`} className="space-y-1">
                     <div className="flex justify-between text-xs text-gray-400">
-                      <span>{p.name}</span>
-                      <span>{p.stock} left</span>
+                      <span>{product.name}</span>
+                      <span>{product.stock} left</span>
                     </div>
                     <div className="h-2 rounded bg-slate-700 overflow-hidden">
                       <div
@@ -310,6 +346,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Monthly Metrics */}
       <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
         <div className="flex items-center justify-between mb-4">
           <div className="text-sm text-gray-400">Monthly Sales</div>
@@ -318,6 +355,7 @@ export default async function DashboardPage() {
         <MonthlySalesChart data={stats.monthlySales} />
       </div>
 
+      {/* AI Insights Module */}
       <div className="grid grid-cols-1 gap-6">
         <AiAdvisor
           summary={{
@@ -325,19 +363,19 @@ export default async function DashboardPage() {
             totalInventory: stats.totalInventory,
             totalSold: stats.totalSold,
             sellThrough: stats.sellThrough,
-            categoryStats: stats.categoryStats.map((c) => ({
-              category: c.category,
-              stock: c.stock,
-              sold: c.sold,
+            categoryStats: stats.categoryStats.map((categoryObj) => ({
+              category: categoryObj.category,
+              stock: categoryObj.stock,
+              sold: categoryObj.sold,
             })),
-            topSelling: stats.topSelling.map((p) => ({
-              name: p.name,
-              sold: p.sold,
-              stock: p.stock,
+            topSelling: stats.topSelling.map((product) => ({
+              name: product.name,
+              sold: product.sold,
+              stock: product.stock,
             })),
-            lowStockList: stats.lowStockList.map((p) => ({
-              name: p.name,
-              stock: p.stock,
+            lowStockList: stats.lowStockList.map((product) => ({
+              name: product.name,
+              stock: product.stock,
             })),
           }}
         />
