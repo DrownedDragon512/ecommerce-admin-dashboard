@@ -17,14 +17,14 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
+    // Destructure form data for a cleaner fetch payload
+    const { email, password } = formData;
+
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -40,6 +40,7 @@ export default function LoginPage() {
       // Successful login - force reload to ensure cookies are set
       setSuccess(true);
       setLoading(false);
+      
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 800);
@@ -135,6 +136,7 @@ export default function LoginPage() {
         </form>
       </div>
 
+      {/* Success Overlay UI */}
       {success && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="relative h-20 w-20 flex items-center justify-center text-white">
