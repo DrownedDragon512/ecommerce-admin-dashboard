@@ -11,6 +11,7 @@ export async function getAuthUser() {
     return null;
   }
 
+  //the try command is used to catch any errors that may occur during the verification process. If the token is valid, it will return the decoded user information. If the token is invalid or expired, it will catch the error and return null, indicating that there is no authenticated user.
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       userId: string;
