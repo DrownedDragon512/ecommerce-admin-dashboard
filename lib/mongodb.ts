@@ -7,7 +7,7 @@ if (!uri) {
   throw new Error("MONGODB_URI is not set. Add it to your .env.local file.");
 }
 
-const options = {
+const opts = {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -17,17 +17,23 @@ const options = {
 
 declare global {
   // eslint-disable-next-line no-var
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongo: Promise<MongoClient> | undefined;
 }
 
-const client = new MongoClient(uri, options);
-const clientPromise = global._mongoClientPromise || client.connect();
+let prm: Promise<MongoClient>;
 
-if (process.env.NODE_ENV !== "production") {
-  global._mongoClientPromise = clientPromise;
+if (process.env.NODE_ENV === "development") {
+  if (!global._mongo) {
+    const cli = new MongoClient(uri, opts);
+    global._mongo = cli.connect();
+  }
+  prm = global._mongo;
+} else {
+  const cli = new MongoClient(uri, opts);
+  prm = cli.connect();
 }
 
 export async function getDb() {
-  const connectedClient = await clientPromise;
-  return connectedClient.db(dbName);
+  const conn = await prm;
+  return conn.db(dbName);
 }
