@@ -18,17 +18,18 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: paramId } = await params;
+    const { id: productId } = await params;
 
-    if (!paramId || !ObjectId.isValid(paramId)) {
+    if (!productId || !ObjectId.isValid(productId)) {
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     const db = await getDb();
+    const productsCollection = db.collection("products");
 
-    const product = await db
-      .collection("products")
-      .findOne({ _id: new ObjectId(paramId) });
+    const product = await productsCollection.findOne({ 
+      _id: new ObjectId(productId) 
+    });
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -54,21 +55,20 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: paramId } = await params;
+    const { id: productId } = await params;
     const body = await req.json();
 
-    if (!paramId || !ObjectId.isValid(paramId)) {
+    if (!productId || !ObjectId.isValid(productId)) {
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     const validatedData = productSchema.parse(body);
 
     const db = await getDb();
+    const productsCollection = db.collection("products");
 
-    const result = await db
-      .collection("products")
-      .updateOne(
-        { _id: new ObjectId(paramId) },
+    const result = await productsCollection.updateOne(
+        { _id: new ObjectId(productId) },
         {
           $set: {
             ...validatedData,
@@ -89,9 +89,12 @@ export async function PUT(
     console.error("Failed to update product", error);
 
     const isValidationError = error instanceof z.ZodError;
+    const errorMessage = isValidationError ? "Invalid product data" : "Unexpected error";
+    const errorStatus = isValidationError ? 400 : 500;
+
     return NextResponse.json(
-      { error: isValidationError ? "Invalid product data" : "Unexpected error" },
-      { status: isValidationError ? 400 : 500 }
+      { error: errorMessage },
+      { status: errorStatus }
     );
   }
 }
@@ -101,17 +104,18 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: paramId } = await params;
+    const { id: productId } = await params;
 
-    if (!paramId || !ObjectId.isValid(paramId)) {
+    if (!productId || !ObjectId.isValid(productId)) {
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     const db = await getDb();
+    const productsCollection = db.collection("products");
 
-    const result = await db
-      .collection("products")
-      .deleteOne({ _id: new ObjectId(paramId) });
+    const result = await productsCollection.deleteOne({ 
+      _id: new ObjectId(productId) 
+    });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
