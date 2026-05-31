@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
 import { Snackbar, SnackbarType } from "../../Snackbar";
 
+/**
+ * Zod Schemas for Form Validation
+ */
 const basicSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().min(1, "Description is required"),
@@ -15,32 +18,40 @@ const pricingSchema = z.object({
   stock: z.number().int().nonnegative("Stock cannot be negative"),
 });
 
-type Product = {
-  _id: string;
+/**
+ * Type Definitions
+ */
+type ProductDraft = {
   name: string;
   description: string;
   price: number;
   stock: number;
-  image?: string;
+  image: string;
 };
 
+type FormErrors = Record<string, string>;
+
+type AlertState = {
+  message: string;
+  type: SnackbarType;
+} | null;
+
 export default function EditProductPage() {
+  // Routing and Params
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
 
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+  // UI State Management
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isHydrating, setIsHydrating] = useState<boolean>(true);
+  const [imagePreviewUri, setImagePreviewUri] = useState<string>("");
+  const [validationErrors, setValidationErrors] = useState<FormErrors>({});
+  const [systemAlert, setSystemAlert] = useState<AlertState>(null);
 
-  const showSnackbar = (message: string, type: SnackbarType = "info") => {
-    setSnackbar({ message, type });
-  };
-
-  const [formData, setFormData] = useState({
+  // Form State
+  const [productDraft, setProductDraft] = useState<ProductDraft>({
     name: "",
     description: "",
     price: 0,
@@ -48,268 +59,312 @@ export default function EditProductPage() {
     image: "",
   });
 
+  /**
+   * Dispatch a system alert (Snackbar)
+   */
+  const dispatchAlert = (message: string, type: SnackbarType = "info") => {
+    setSystemAlert({ message, type });
+  };
+
+  /**
+   * Generic field change handler to unify state updates
+   */
+  const handleFieldChange = (field: keyof ProductDraft, value: string | number) => {
+    setProductDraft((prev) => ({ ...prev, [field]: value }));
+    // Clear error for the specific field upon typing
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  /**
+   * Hydrate form with existing product data on mount
+   */
   useEffect(() => {
-    const loadProduct = async () => {
+    let isMounted = true;
+
+    const hydrateProductData = async () => {
       try {
-        const res = await fetch(`/api/products/${productId}`);
-        if (res.ok) {
-          const product = await res.json();
-          setFormData({
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            stock: product.stock,
-            image: product.image || "",
-          });
-          if (product.image) {
-            setImagePreview(product.image);
+        const response = await fetch(`/api/products/${productId}`);
+        if (response.ok) {
+          const product = await response.json();
+          if (isMounted) {
+            setProductDraft({
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              stock: product.stock,
+              image: product.image || "",
+            });
+            if (product.image) setImagePreviewUri(product.image);
           }
         } else {
-          const error = await res.json().catch(() => ({ error: "Unknown error" }));
-          showSnackbar(`Failed to load product: ${error.error}`, "error");
-          setTimeout(() => router.push("/dashboard/products"), 500);
+          const errorPayload = await response.json().catch(() => ({ error: "Unknown error" }));
+          dispatchAlert(`Failed to load product: ${errorPayload.error}`, "error");
+          setTimeout(() => { if (isMounted) router.push("/dashboard/products"); }, 500);
         }
       } catch (error) {
-        showSnackbar(`Error loading product: ${error}`, "error");
-        setTimeout(() => router.push("/dashboard/products"), 500);
+        dispatchAlert(`Error loading product: ${error}`, "error");
+        setTimeout(() => { if (isMounted) router.push("/dashboard/products"); }, 500);
       } finally {
-        setInitialLoading(false);
+        if (isMounted) setIsHydrating(false);
       }
     };
 
-    loadProduct();
+    hydrateProductData();
+
+    return () => {
+      isMounted = false; // Cleanup to prevent memory leaks
+    };
   }, [productId, router]);
 
-  const handleNextFromBasic = () => {
-    const result = basicSchema.safeParse({
-      name: formData.name,
-      description: formData.description,
+  /**
+   * Validation & Navigation: Step 1 -> Step 2
+   */
+  const proceedToPricing = () => {
+    const validation = basicSchema.safeParse({
+      name: productDraft.name,
+      description: productDraft.description,
     });
 
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as string;
-        fieldErrors[field] = issue.message;
+    if (!validation.success) {
+      const fieldErrors: FormErrors = {};
+      validation.error.issues.forEach((issue) => {
+        fieldErrors[issue.path[0] as string] = issue.message;
       });
-      setErrors(fieldErrors);
+      setValidationErrors(fieldErrors);
       return;
     }
 
-    setErrors({});
-    setStep(2);
+    setValidationErrors({});
+    setCurrentStep(2);
   };
 
-  const handleNextFromPricing = () => {
-    const result = pricingSchema.safeParse({
-      price: formData.price,
-      stock: formData.stock,
+  /**
+   * Validation & Navigation: Step 2 -> Step 3
+   */
+  const proceedToMedia = () => {
+    const validation = pricingSchema.safeParse({
+      price: productDraft.price,
+      stock: productDraft.stock,
     });
 
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as string;
-        fieldErrors[field] = issue.message;
+    if (!validation.success) {
+      const fieldErrors: FormErrors = {};
+      validation.error.issues.forEach((issue) => {
+        fieldErrors[issue.path[0] as string] = issue.message;
       });
-      setErrors(fieldErrors);
+      setValidationErrors(fieldErrors);
       return;
     }
 
-    setErrors({});
-    setStep(3);
+    setValidationErrors({});
+    setCurrentStep(3);
   };
 
-  const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  /**
+   * Process and encode image file to Base64
+   */
+  const processImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
-      setFormData({ ...formData, image: base64 });
-      setImagePreview(base64);
+    const fileReader = new FileReader();
+    fileReader.onload = (e) => {
+      const encodedString = e.target?.result as string;
+      setProductDraft((prev) => ({ ...prev, image: encodedString }));
+      setImagePreviewUri(encodedString);
     };
-    reader.readAsDataURL(file);
+    fileReader.readAsDataURL(file);
   };
 
-  const handleSaveProduct = async () => {
+  /**
+   * Final Submission Handler
+   */
+  const commitProductUpdates = async () => {
     try {
-      setLoading(true);
+      setIsSubmitting(true);
 
-      const res = await fetch(`/api/products/${productId}`, {
+      const response = await fetch(`/api/products/${productId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          price: formData.price,
-          stock: formData.stock,
-          image: formData.image,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productDraft),
       });
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: "Unknown error" }));
-        showSnackbar(error.error || "Failed to update product", "error");
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({ error: "Unknown error" }));
+        dispatchAlert(errorPayload.error || "Failed to update product", "error");
         return;
       }
 
-      showSnackbar("Product updated successfully!", "success");
+      dispatchAlert("Product updated successfully!", "success");
       setTimeout(() => router.push("/dashboard/products"), 500);
     } catch (error) {
-      showSnackbar("Something went wrong", "error");
+      dispatchAlert("Critical failure during submission", "error");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (initialLoading) {
-    return <div className="p-8">Loading product...</div>;
+  /**
+   * Render function for form steps (Switch Architecture)
+   */
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+            <input
+              type="text"
+              placeholder="Product Name"
+              className="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+              value={productDraft.name}
+              onChange={(e) => handleFieldChange("name", e.target.value)}
+            />
+            {validationErrors.name && <p className="text-sm text-red-600">{validationErrors.name}</p>}
+
+            <textarea
+              placeholder="Description"
+              className="w-full rounded border px-3 py-2 min-h-[100px] focus:outline-none focus:ring-2 focus:ring-black"
+              value={productDraft.description}
+              onChange={(e) => handleFieldChange("description", e.target.value)}
+            />
+            {validationErrors.description && (
+              <p className="text-sm text-red-600">{validationErrors.description}</p>
+            )}
+
+            <button
+              onClick={proceedToPricing}
+              className="rounded bg-black px-6 py-2 text-white transition-colors hover:bg-gray-800"
+            >
+              Next Step
+            </button>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+            <input
+              type="number"
+              placeholder="Price"
+              className="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+              value={productDraft.price || ""}
+              onChange={(e) => handleFieldChange("price", Number(e.target.value))}
+            />
+            {validationErrors.price && <p className="text-sm text-red-600">{validationErrors.price}</p>}
+
+            <input
+              type="number"
+              placeholder="Stock Quantity"
+              className="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+              value={productDraft.stock || ""}
+              onChange={(e) => handleFieldChange("stock", Number(e.target.value))}
+            />
+            {validationErrors.stock && <p className="text-sm text-red-600">{validationErrors.stock}</p>}
+
+            <div className="flex justify-between pt-2">
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="rounded border border-gray-300 px-6 py-2 transition-colors hover:bg-gray-50"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={proceedToMedia}
+                className="rounded bg-black px-6 py-2 text-white transition-colors hover:bg-gray-800"
+              >
+                Next Step
+              </button>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
+                onChange={processImageUpload}
+              />
+            </div>
+
+            {imagePreviewUri && (
+              <div className="mt-6 border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium text-gray-700 mb-3">Media Preview</p>
+                <img
+                  src={imagePreviewUri}
+                  alt="Product preview"
+                  className="max-w-xs max-h-64 rounded object-cover shadow-sm"
+                />
+              </div>
+            )}
+
+            <div className="flex justify-between pt-4">
+              <button
+                onClick={() => setCurrentStep(2)}
+                className="rounded border border-gray-300 px-6 py-2 transition-colors hover:bg-gray-50"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={commitProductUpdates}
+                disabled={isSubmitting}
+                className="rounded bg-green-600 px-6 py-2 text-white font-medium transition-colors hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "Finalizing Update..." : "Confirm & Save Product"}
+              </button>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (isHydrating) {
+    return (
+      <div className="flex h-64 items-center justify-center p-8">
+        <div className="text-gray-500 font-medium animate-pulse">Synchronizing product data...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-2xl p-8">
-      {snackbar && (
+    <div className="mx-auto max-w-2xl p-8">
+      {systemAlert && (
         <Snackbar
-          message={snackbar.message}
-          type={snackbar.type}
-          onClose={() => setSnackbar(null)}
+          message={systemAlert.message}
+          type={systemAlert.type}
+          onClose={() => setSystemAlert(null)}
         />
       )}
-      <h1 className="mb-6 text-3xl font-bold">Edit Product</h1>
+      
+      <header className="mb-8 border-b pb-4">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Workspace: Edit Product</h1>
+        <p className="text-sm text-gray-500 mt-1">Modify product parameters, pricing, and media assets.</p>
+      </header>
 
-      <div className="mb-8 flex gap-6 text-sm">
-        <span className={step === 1 ? "font-bold" : "text-gray-400"}>
-          1. Basic
-        </span>
-        <span className={step === 2 ? "font-bold" : "text-gray-400"}>
-          2. Pricing
-        </span>
-        <span className={step === 3 ? "font-bold" : "text-gray-400"}>
-          3. Image
-        </span>
-      </div>
+      {/* Progress Indicator */}
+      <nav aria-label="Progress">
+        <ol className="mb-8 flex gap-6 text-sm font-medium border-b pb-4">
+          <li className={currentStep >= 1 ? "text-black" : "text-gray-400"}>
+            <span className="mr-2">01</span> Configuration
+          </li>
+          <li className={currentStep >= 2 ? "text-black" : "text-gray-400"}>
+            <span className="mr-2">02</span> Economics
+          </li>
+          <li className={currentStep >= 3 ? "text-black" : "text-gray-400"}>
+            <span className="mr-2">03</span> Media Assets
+          </li>
+        </ol>
+      </nav>
 
-      {/* Step 1 */}
-      {step === 1 && (
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Product Name"
-            className="w-full rounded border px-3 py-2"
-            value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
-          />
-          {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
-
-          <textarea
-            placeholder="Description"
-            className="w-full rounded border px-3 py-2"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-          />
-          {errors.description && (
-            <p className="text-sm text-red-600">{errors.description}</p>
-          )}
-
-          <button
-            onClick={handleNextFromBasic}
-            className="rounded bg-black px-4 py-2 text-white"
-          >
-            Next
-          </button>
-        </div>
-      )}
-
-      {/* Step 2 */}
-      {step === 2 && (
-        <div className="space-y-4">
-          <input
-            type="number"
-            placeholder="Price"
-            className="w-full rounded border px-3 py-2"
-            value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: Number(e.target.value) })
-            }
-          />
-          {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}
-
-          <input
-            type="number"
-            placeholder="Stock"
-            className="w-full rounded border px-3 py-2"
-            value={formData.stock}
-            onChange={(e) =>
-              setFormData({ ...formData, stock: Number(e.target.value) })
-            }
-          />
-          {errors.stock && <p className="text-sm text-red-600">{errors.stock}</p>}
-
-          <div className="flex justify-between">
-            <button
-              onClick={() => setStep(1)}
-              className="rounded border px-4 py-2"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleNextFromPricing}
-              className="rounded bg-black px-4 py-2 text-white"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3 */}
-      {step === 3 && (
-        <div className="space-y-4">
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full rounded border px-3 py-2"
-            onChange={handleImageChange}
-          />
-
-          {imagePreview && (
-            <div className="mt-4 border rounded p-4">
-              <p className="text-sm text-gray-600 mb-2">Image Preview:</p>
-              <img
-                src={imagePreview}
-                alt="Product preview"
-                className="max-w-xs max-h-64 rounded"
-              />
-            </div>
-          )}
-
-          <div className="flex justify-between">
-            <button
-              onClick={() => setStep(2)}
-              className="rounded border px-4 py-2"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleSaveProduct}
-              disabled={loading}
-              className="rounded bg-green-600 px-4 py-2 text-white disabled:opacity-50"
-            >
-              {loading ? "Saving..." : "Update Product"}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Dynamic Step Injection */}
+      <main className="min-h-[300px]">
+        {renderCurrentStep()}
+      </main>
     </div>
   );
 }
