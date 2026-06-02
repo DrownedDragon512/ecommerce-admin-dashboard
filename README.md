@@ -12,6 +12,7 @@ Built with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, and *
     <b>Watch the Full Technical Walkthrough (Next.js 14, Auth, AI)</b>
   </p>
 </div>
+
 ---
 
 ## Overview
@@ -42,6 +43,14 @@ This project uses the following stack:
 ---
 
 ## Features
+
+<div align="center">
+  <img src="public/a.png" alt="Feature Image A" width="32%" />
+  &nbsp;
+  <img src="public/b.png" alt="Feature Image B" width="32%" />
+  &nbsp;
+  <img src="public/c.png" alt="Feature Image C" width="32%" />
+</div>
 
 ### Core Dashboard
 - Real-time statistics (products, revenue, stock, sales)
