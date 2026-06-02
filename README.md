@@ -4,7 +4,7 @@ Built with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, and *
 
 <div align="center">
   <br />
-  <a href="https://www.youtube.com/watch?v=WiKYGZgK-Aw?autoplay=1">
+  <a href="https://www.youtube.com/watch?v=kBTJJggfadw&autoplay=1">
     <img src="https://img.youtube.com/vi/WiKYGZgK-Aw/hqdefault.jpg" alt="Watch the Demo" width="80%"/>
   </a>
   <br />
