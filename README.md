@@ -5,17 +5,13 @@ Built with **Next.js 14+ (App Router)**, **TypeScript**, **Tailwind CSS**, and *
 <div align="center">
   <br />
   <a href="https://www.youtube.com/watch?v=kBTJJggfadw&autoplay=1">
-    <img src="https://img.youtube.com/vi/WiKYGZgK-Aw/hqdefault.jpg" alt="Watch the Demo" width="80%"/>
+    <img src="https://img.youtube.com/vi/kBTJJggfadw/hqdefault.jpg" alt="Watch the Demo" width="80%"/>
   </a>
   <br />
   <p>
     <b>Watch the Full Technical Walkthrough (Next.js 14, Auth, AI)</b>
   </p>
 </div>
-
-**View Demo:**  
-https://ecommerce-admin-dashboard-1pn4.vercel.app/dashboard
-
 ---
 
 ## Overview
